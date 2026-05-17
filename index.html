@@ -219,7 +219,6 @@
       import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js";
       import { getFirestore, collection, addDoc, getDocs, query, where, deleteDoc, doc, updateDoc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
 
-      // SUAS CHAVES DO FIREBASE
       const firebaseConfig = {
         apiKey: "AIzaSyAN8paneK7-vVWZLStblw83K-ay4nMUmrc",
         authDomain: "meu-financeiro-4e1c5.firebaseapp.com",
@@ -234,7 +233,6 @@
       const auth = getAuth(app);
       const db = getFirestore(app);
 
-      // VARIÁVEIS GLOBAIS
       let currentUser = null;
       let modoLogin = true;
       let idEmEdicao = null;
@@ -242,28 +240,26 @@
       let resumoGlobal = null; 
       let filtroRapidoAtivo = 'Todas';
       const formatoMoeda = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
-      
       let minhasMetas = { Contas: 500, Cartao: 1000, Moto: 300, Pessoal: 500, Outros: 300 };
 
-      // INICIALIZAÇÃO
-      google.charts.load('current', {'packages':['corechart']});
-      window.onload = () => {
-        verificarTemaSalvo();
+      // Configuração Inicial de Datas antes de carregar
+      function setupInicial() {
+        if (localStorage.getItem('temaFinanceiro') === 'escuro') { document.body.classList.add('tema-escuro'); document.getElementById('btn-icone-tema').innerHTML = '<i class="ph ph-sun"></i>'; }
         var d = new Date();
         document.getElementById('filtro-mes').value = d.getMonth() + 1;
         document.getElementById('filtro-ano').value = d.getFullYear();
         document.getElementById('data').value = d.toISOString().split('T')[0];
-      };
+      }
+      setupInicial();
+      google.charts.load('current', {'packages':['corechart']});
 
-      // VERIFICADOR DE SESSÃO
       onAuthStateChanged(auth, async (user) => {
         if (user) {
           currentUser = user;
           document.getElementById('auth-screen').style.display = 'none';
           document.getElementById('app-screen').style.display = 'block';
           await carregarMetas();
-          carregarDadosFirebase();
-          showToast('Bem-vindo ao Painel!');
+          window.carregarDadosFirebase();
         } else {
           currentUser = null;
           document.getElementById('auth-screen').style.display = 'flex';
@@ -271,7 +267,6 @@
         }
       });
 
-      // --- SISTEMA DE AUTENTICAÇÃO ---
       window.alternarModoAuth = function() {
         modoLogin = !modoLogin;
         document.getElementById('auth-title').innerText = modoLogin ? "Entrar no Painel" : "Criar Nova Conta";
@@ -302,14 +297,10 @@
 
       window.fazerLogout = function() { signOut(auth); }
 
-      // --- METAS NO BANCO DE DADOS ---
       async function carregarMetas() {
         try {
-          const docRef = doc(db, "usuarios", currentUser.uid);
-          const docSnap = await getDoc(docRef);
-          if (docSnap.exists() && docSnap.data().metas) {
-            minhasMetas = docSnap.data().metas;
-          }
+          const docSnap = await getDoc(doc(db, "usuarios", currentUser.uid));
+          if (docSnap.exists() && docSnap.data().metas) minhasMetas = docSnap.data().metas;
         } catch(e) { console.log(e); }
       }
 
@@ -318,38 +309,33 @@
         if (novo) { 
           minhasMetas[categoria] = parseFloat(novo.replace(',','.')); 
           atualizarTela(resumoGlobal); 
-          showToast(`Meta atualizada na nuvem!`, 'success');
-          // Salva no Firebase
           await setDoc(doc(db, "usuarios", currentUser.uid), { metas: minhasMetas }, { merge: true });
+          showToast(`Meta atualizada na nuvem!`, 'success');
         }
       }
 
-      // --- LEITURA E ESCRITA FIREBASE ---
       window.carregarDadosFirebase = async function() {
-        document.getElementById('carregando').style.display = 'flex';
+        const divCarregando = document.getElementById('carregando');
+        divCarregando.innerHTML = '<div class="spinner"></div><span id="texto-carregando">Lendo banco de dados...</span>';
+        divCarregando.style.display = 'flex';
         document.getElementById('conteudo').style.display = 'none';
         
         const mesDesejado = parseInt(document.getElementById('filtro-mes').value);
         const anoDesejado = parseInt(document.getElementById('filtro-ano').value);
 
         try {
-          // Puxa APENAS os dados do usuário logado
           const q = query(collection(db, "lancamentos"), where("uid", "==", currentUser.uid));
           const querySnapshot = await getDocs(q);
           
           let resumo = { totalGastos: 0, totalReceitas: 0, saldo: 0, categorias: { "Contas": 0, "Cartão de Crédito": 0, "Moto": 0, "Pessoal": 0, "Outros": 0, "Salário": 0 }, historico: [] };
           let todosDados = [];
 
-          querySnapshot.forEach((doc) => {
-            let item = { id: doc.id, ...doc.data() };
-            todosDados.push(item);
-          });
-
-          // Ordena por data mais recente
-          todosDados.sort((a, b) => new Date(b.data) - new Date(a.data));
+          querySnapshot.forEach((doc) => { todosDados.push({ id: doc.id, ...doc.data() }); });
+          todosDados.sort((a, b) => new Date(b.data || "2000-01-01") - new Date(a.data || "2000-01-01"));
 
           todosDados.forEach(item => {
-            let d = new Date(item.data + "T12:00:00"); // forçar fuso neutro
+            if(!item.data) return;
+            let d = new Date(item.data + "T12:00:00"); 
             if(d.getMonth() + 1 === mesDesejado && d.getFullYear() === anoDesejado) {
               let valor = parseFloat(item.valor) || 0;
               let cat = item.categoria || "Outros";
@@ -370,168 +356,117 @@
           resumo.saldo = resumo.totalReceitas - resumo.totalGastos;
           atualizarTela(resumo);
         } catch(error) {
-          showToast("Erro ao carregar: " + error.message, "error");
+          // AQUI ESTÁ A MÁGICA: Se der erro, ele fica travado na tela para nós lermos!
+          divCarregando.innerHTML = `<i class="ph ph-warning-circle" style="font-size:3em; color:var(--cor-erro)"></i><br><span style="color:var(--cor-erro); text-align:center;"><b>O Firebase Bloqueou o Acesso</b><br>${error.message}</span>`;
         }
       }
 
       window.salvarOuAtualizar = async function() {
         if(!document.getElementById('valor').value) return showToast("Digite o valor!", "error");
-        
         var btn = document.getElementById('btn-salvar');
         btn.innerHTML = '<div class="spinner" style="width:20px;height:20px;"></div>'; btn.disabled = true;
 
         var dados = {
-          uid: currentUser.uid,
-          tipo: document.getElementById('tipo').value,
-          data: document.getElementById('data').value,
-          descricao: document.getElementById('descricao').value || "Diversos",
-          categoria: document.getElementById('categoria').value,
-          status: document.getElementById('status').value,
-          valor: parseFloat(document.getElementById('valor').value)
+          uid: currentUser.uid, tipo: document.getElementById('tipo').value, data: document.getElementById('data').value,
+          descricao: document.getElementById('descricao').value || "Diversos", categoria: document.getElementById('categoria').value,
+          status: document.getElementById('status').value, valor: parseFloat(document.getElementById('valor').value)
         };
         
         try {
-          if (idEmEdicao) {
-            await updateDoc(doc(db, "lancamentos", idEmEdicao), dados);
-            showToast('Atualizado com sucesso!');
-          } else {
-            await addDoc(collection(db, "lancamentos"), dados);
-            showToast('Salvo com sucesso!');
-          }
-          cancelarEdicao(); 
-          carregarDadosFirebase();
+          if (idEmEdicao) { await updateDoc(doc(db, "lancamentos", idEmEdicao), dados); showToast('Atualizado com sucesso!'); } 
+          else { await addDoc(collection(db, "lancamentos"), dados); showToast('Salvo com sucesso!'); }
+          window.cancelarEdicao(); 
+          window.carregarDadosFirebase();
         } catch(error) { showToast("Erro: " + error.message, "error"); }
-        
         btn.innerHTML = '<i class="ph ph-floppy-disk"></i> Salvar Lançamento'; btn.disabled = false;
       }
 
       window.apagarItem = async function(id) {
         if(window.confirm("Apagar registro definitivamente?")) {
           document.getElementById('carregando').style.display = 'flex'; document.getElementById('conteudo').style.display = 'none';
-          try {
-            await deleteDoc(doc(db, "lancamentos", id));
-            showToast('Registro apagado!');
-            carregarDadosFirebase();
-          } catch(e) { showToast(e.message, 'error'); }
+          try { await deleteDoc(doc(db, "lancamentos", id)); showToast('Apagado!'); window.carregarDadosFirebase(); } 
+          catch(e) { showToast(e.message, 'error'); }
         }
       }
 
       window.trocarStatus = async function(id, statusAtual) {
         document.getElementById('carregando').style.display = 'flex'; document.getElementById('conteudo').style.display = 'none';
-        try {
-          await updateDoc(doc(db, "lancamentos", id), { status: statusAtual === 'Pago' ? 'Pendente' : 'Pago' });
-          showToast('Status atualizado!');
-          carregarDadosFirebase();
-        } catch(e) { showToast(e.message, 'error'); }
+        try { await updateDoc(doc(db, "lancamentos", id), { status: statusAtual === 'Pago' ? 'Pendente' : 'Pago' }); window.carregarDadosFirebase(); } 
+        catch(e) { showToast(e.message, 'error'); }
       }
 
       window.prepararEdicao = function(id) {
         var item = historicoGlobal.find(i => i.id === id);
         if(!item) return;
         idEmEdicao = item.id;
-        document.getElementById('tipo').value = item.tipo;
-        document.getElementById('data').value = item.dataParaFormulario;
-        document.getElementById('descricao').value = item.descricao;
-        document.getElementById('categoria').value = item.categoria;
-        document.getElementById('valor').value = item.valor;
-        document.getElementById('status').value = item.status;
-        document.getElementById('btn-cancelar').style.display = 'block';
-        document.getElementById('titulo-form').innerText = "Editando Registro";
+        document.getElementById('tipo').value = item.tipo; document.getElementById('data').value = item.dataParaFormulario;
+        document.getElementById('descricao').value = item.descricao; document.getElementById('categoria').value = item.categoria;
+        document.getElementById('valor').value = item.valor; document.getElementById('status').value = item.status;
+        document.getElementById('btn-cancelar').style.display = 'block'; document.getElementById('titulo-form').innerText = "Editando Registro";
         document.getElementById('titulo-form').scrollIntoView({behavior: "smooth", block: "start"});
       }
 
       window.cancelarEdicao = function() {
         idEmEdicao = null; document.getElementById('btn-cancelar').style.display = 'none';
-        document.getElementById('titulo-form').innerText = "Novo Lançamento";
-        document.getElementById('descricao').value = ''; document.getElementById('valor').value = '';
+        document.getElementById('titulo-form').innerText = "Novo Lançamento"; document.getElementById('descricao').value = ''; document.getElementById('valor').value = '';
       }
 
-      // --- FUNÇÕES DE UI / RENDERIZAÇÃO ---
       function atualizarTela(resumo) {
-        resumoGlobal = resumo; historicoGlobal = resumo.historico;
-        document.getElementById('tela-saldo').innerText = formatoMoeda.format(resumo.saldo);
-        document.getElementById('tela-receitas').innerText = formatoMoeda.format(resumo.totalReceitas);
-        document.getElementById('tela-gastos').innerText = formatoMoeda.format(resumo.totalGastos);
-        document.getElementById('tela-contas').innerText = formatoMoeda.format(resumo.categorias['Contas'] || 0);
-        document.getElementById('tela-cartao').innerText = formatoMoeda.format(resumo.categorias['Cartão de Crédito'] || 0);
-        document.getElementById('tela-moto').innerText = formatoMoeda.format(resumo.categorias['Moto'] || 0);
-        document.getElementById('tela-pessoal').innerText = formatoMoeda.format(resumo.categorias['Pessoal'] || 0);
-        document.getElementById('tela-outros').innerText = formatoMoeda.format(resumo.categorias['Outros'] || 0);
-        
-        atualizarBarraMeta('prog-contas', 'meta-contas', resumo.categorias['Contas'] || 0, minhasMetas.Contas);
-        atualizarBarraMeta('prog-cartao', 'meta-cartao', resumo.categorias['Cartão de Crédito'] || 0, minhasMetas.Cartao);
-        atualizarBarraMeta('prog-moto', 'meta-moto', resumo.categorias['Moto'] || 0, minhasMetas.Moto);
-        atualizarBarraMeta('prog-pessoal', 'meta-pessoal', resumo.categorias['Pessoal'] || 0, minhasMetas.Pessoal);
-        atualizarBarraMeta('prog-outros', 'meta-outros', resumo.categorias['Outros'] || 0, minhasMetas.Outros);
-        
-        google.charts.setOnLoadCallback(function() { desenharGrafico(resumo); });
-        filtrarLista(); 
-        document.getElementById('carregando').style.display = 'none';
-        document.getElementById('conteudo').style.display = 'flex';
+        try {
+          resumoGlobal = resumo; historicoGlobal = resumo.historico;
+          document.getElementById('tela-saldo').innerText = formatoMoeda.format(resumo.saldo);
+          document.getElementById('tela-receitas').innerText = formatoMoeda.format(resumo.totalReceitas);
+          document.getElementById('tela-gastos').innerText = formatoMoeda.format(resumo.totalGastos);
+          document.getElementById('tela-contas').innerText = formatoMoeda.format(resumo.categorias['Contas'] || 0);
+          document.getElementById('tela-cartao').innerText = formatoMoeda.format(resumo.categorias['Cartão de Crédito'] || 0);
+          document.getElementById('tela-moto').innerText = formatoMoeda.format(resumo.categorias['Moto'] || 0);
+          document.getElementById('tela-pessoal').innerText = formatoMoeda.format(resumo.categorias['Pessoal'] || 0);
+          document.getElementById('tela-outros').innerText = formatoMoeda.format(resumo.categorias['Outros'] || 0);
+          
+          atualizarBarraMeta('prog-contas', 'meta-contas', resumo.categorias['Contas'] || 0, minhasMetas.Contas);
+          atualizarBarraMeta('prog-cartao', 'meta-cartao', resumo.categorias['Cartão de Crédito'] || 0, minhasMetas.Cartao);
+          atualizarBarraMeta('prog-moto', 'meta-moto', resumo.categorias['Moto'] || 0, minhasMetas.Moto);
+          atualizarBarraMeta('prog-pessoal', 'meta-pessoal', resumo.categorias['Pessoal'] || 0, minhasMetas.Pessoal);
+          atualizarBarraMeta('prog-outros', 'meta-outros', resumo.categorias['Outros'] || 0, minhasMetas.Outros);
+          
+          if(typeof google !== 'undefined' && google.charts) { google.charts.setOnLoadCallback(function() { desenharGrafico(resumo); }); }
+          window.filtrarLista(); 
+          document.getElementById('carregando').style.display = 'none';
+          document.getElementById('conteudo').style.display = 'flex';
+        } catch (e) {
+          document.getElementById('carregando').innerHTML = `<i class="ph ph-warning-circle" style="font-size:3em; color:var(--cor-erro)"></i><br><span style="color:var(--cor-erro)">Erro na Tela: ${e.message}</span>`;
+        }
+      }
+
+      function atualizarBarraMeta(idProgresso, idTexto, valorGasto, limite) {
+        var barra = document.getElementById(idProgresso); document.getElementById(idTexto).innerText = `R$ ${limite.toFixed(2)}`;
+        var perc = limite > 0 ? (valorGasto / limite) * 100 : 100;
+        barra.style.width = (perc > 100 ? 100 : perc) + '%'; barra.style.backgroundColor = valorGasto > limite ? 'var(--cor-erro)' : 'var(--cor-sucesso)';
+      }
+
+      function desenharGrafico(resumo) {
+        if (!google || !google.visualization || !google.visualization.arrayToDataTable) return;
+        var data = google.visualization.arrayToDataTable([ ['Categoria', 'Gasto'], ['Contas', resumo.categorias['Contas'] || 0], ['Cartão', resumo.categorias['Cartão de Crédito'] || 0], ['Moto', resumo.categorias['Moto'] || 0], ['Pessoal', resumo.categorias['Pessoal'] || 0], ['Outros', resumo.categorias['Outros'] || 0] ]);
+        var options = { pieHole: 0.55, backgroundColor: 'transparent', legend: { textStyle: { color: document.body.classList.contains('tema-escuro') ? '#f8fafc' : '#1e293b', fontName: 'Poppins', fontSize: 13 }, position: 'right' }, chartArea: {width:'90%',height:'85%'}, colors: ['#4f46e5', '#3b82f6', '#f97316', '#8b5cf6', '#10b981'], pieSliceBorderColor: document.body.classList.contains('tema-escuro') ? '#1e293b' : '#ffffff' };
+        new google.visualization.PieChart(document.getElementById('grafico-despesas')).draw(data, options);
       }
 
       window.renderizarLista = function(lista) {
         var div = document.getElementById('lista-historico'); div.innerHTML = '';
         if(lista.length === 0) { div.innerHTML = '<p style="text-align:center; color:var(--cor-texto-secundario); margin-top:20px;">Nenhum item encontrado.</p>'; return; }
-        
         lista.forEach(function(item) {
           var cor = item.tipo === 'Receita' ? 'var(--cor-sucesso)' : (item.status === 'Pago' ? 'var(--cor-sucesso)' : 'var(--cor-texto)');
           var op = item.status === 'Pago' ? 'opacity:0.6;' : '';
           var ico = item.status === 'Pago' ? '<i class="ph ph-check"></i> Pago' : '<i class="ph ph-hourglass"></i> Pendente';
-
-          div.innerHTML += `
-            <div class="item-historico" style="${op}">
-              <div class="info-historico">
-                <strong>${item.descricao}</strong>
-                <span><i class="ph ph-calendar-blank"></i> ${item.dataParaTela} &nbsp;&bull;&nbsp; ${item.categoria} &nbsp;&bull;&nbsp; <strong style="color:${cor}">${item.tipo==='Receita'?'+':'-'} ${formatoMoeda.format(item.valor)}</strong></span>
-              </div>
-              <div class="acoes-historico">
-                <button class="badge-status ${item.status==='Pago'?'pago':'pendente'}" onclick="trocarStatus('${item.id}', '${item.status}')">${ico}</button>
-                <button class="btn-icone" onclick="prepararEdicao('${item.id}')"><i class="ph ph-pencil-simple"></i></button>
-                <button class="btn-icone excluir" onclick="apagarItem('${item.id}')"><i class="ph ph-trash"></i></button>
-              </div>
-            </div>`;
+          div.innerHTML += `<div class="item-historico" style="${op}"><div class="info-historico"><strong>${item.descricao}</strong><span><i class="ph ph-calendar-blank"></i> ${item.dataParaTela} &nbsp;&bull;&nbsp; ${item.categoria} &nbsp;&bull;&nbsp; <strong style="color:${cor}">${item.tipo==='Receita'?'+':'-'} ${formatoMoeda.format(item.valor)}</strong></span></div><div class="acoes-historico"><button class="badge-status ${item.status==='Pago'?'pago':'pendente'}" onclick="trocarStatus('${item.id}', '${item.status}')">${ico}</button><button class="btn-icone" onclick="prepararEdicao('${item.id}')"><i class="ph ph-pencil-simple"></i></button><button class="btn-icone excluir" onclick="apagarItem('${item.id}')"><i class="ph ph-trash"></i></button></div></div>`;
         });
       }
 
-      window.aplicarFiltroRapido = function(tipo, btnClicado) {
-        filtroRapidoAtivo = tipo;
-        document.querySelectorAll('.btn-pilula').forEach(b => b.classList.remove('ativo'));
-        btnClicado.classList.add('ativo');
-        filtrarLista();
-      }
-
-      window.filtrarLista = function() {
-        var busca = document.getElementById('campo-busca').value.toLowerCase();
-        var filtrada = historicoGlobal.filter(function(i) {
-          var passTxt = (i.descricao + " " + i.categoria).toLowerCase().includes(busca);
-          var passPil = filtroRapidoAtivo==='Todas' || (filtroRapidoAtivo==='Receita'&&i.tipo==='Receita') || (filtroRapidoAtivo==='Despesa'&&i.tipo==='Despesa') || (filtroRapidoAtivo==='Pendente'&&i.status==='Pendente');
-          return passTxt && passPil;
-        });
-        renderizarLista(filtrada);
-      }
-
-      window.alternarTema = function() {
-        document.body.classList.toggle('tema-escuro');
-        const icon = document.getElementById('btn-icone-tema');
-        if(document.body.classList.contains('tema-escuro')) { icon.innerHTML = '<i class="ph ph-sun"></i>'; localStorage.setItem('temaFinanceiro', 'escuro'); } 
-        else { icon.innerHTML = '<i class="ph ph-moon"></i>'; localStorage.setItem('temaFinanceiro', 'claro'); }
-        if (resumoGlobal) desenharGrafico(resumoGlobal);
-      }
-      function verificarTemaSalvo() { if (localStorage.getItem('temaFinanceiro') === 'escuro') { document.body.classList.add('tema-escuro'); document.getElementById('btn-icone-tema').innerHTML = '<i class="ph ph-sun"></i>'; } }
-      function showToast(msg, tipo='success') {
-        const c = document.getElementById('toast-container'); const t = document.createElement('div'); t.className = `toast ${tipo}`;
-        t.innerHTML = (tipo==='success'?'<i class="ph ph-check-circle" style="font-size:1.5em; color:var(--cor-sucesso)"></i>':'<i class="ph ph-warning-circle" style="font-size:1.5em; color:var(--cor-erro)"></i>') + ` <span>${msg}</span>`;
-        c.appendChild(t); setTimeout(() => { t.style.animation = 'slideOut 0.3s ease-in forwards'; setTimeout(() => t.remove(), 300); }, 3000);
-      }
-      window.corrigirTextoInteligente = function() {
-        var c = document.getElementById('descricao'); var t = c.value.toLowerCase(); var cat = document.getElementById('categoria'); var tipo = document.getElementById('tipo');
-        if (t.includes('csa')||t.includes('casa')) { c.value="Ajuda em casa"; cat.value="Contas"; tipo.value="Despesa"; }
-        else if (t.includes('claro')||t.includes('plano')) { c.value="Plano Claro"; cat.value="Contas"; tipo.value="Despesa"; }
-        else if (t.includes('mercado')||t.includes('livre')) { c.value="Mercado Livre"; cat.value="Contas"; tipo.value="Despesa"; }
-        else if (t.includes('cbr')||t.includes('moto')) { cat.value="Moto"; tipo.value="Despesa"; }
-        else if (t.includes('lanche')||t.includes('ifood')) { cat.value="Pessoal"; tipo.value="Despesa"; }
-      }
+      window.aplicarFiltroRapido = function(tipo, btnClicado) { filtroRapidoAtivo = tipo; document.querySelectorAll('.btn-pilula').forEach(b => b.classList.remove('ativo')); btnClicado.classList.add('ativo'); window.filtrarLista(); }
+      window.filtrarLista = function() { var busca = document.getElementById('campo-busca').value.toLowerCase(); var filtrada = historicoGlobal.filter(function(i) { var passTxt = (i.descricao + " " + i.categoria).toLowerCase().includes(busca); var passPil = filtroRapidoAtivo==='Todas' || (filtroRapidoAtivo==='Receita'&&i.tipo==='Receita') || (filtroRapidoAtivo==='Despesa'&&i.tipo==='Despesa') || (filtroRapidoAtivo==='Pendente'&&i.status==='Pendente'); return passTxt && passPil; }); window.renderizarLista(filtrada); }
+      window.alternarTema = function() { document.body.classList.toggle('tema-escuro'); const icon = document.getElementById('btn-icone-tema'); if(document.body.classList.contains('tema-escuro')) { icon.innerHTML = '<i class="ph ph-sun"></i>'; localStorage.setItem('temaFinanceiro', 'escuro'); } else { icon.innerHTML = '<i class="ph ph-moon"></i>'; localStorage.setItem('temaFinanceiro', 'claro'); } if (resumoGlobal) desenharGrafico(resumoGlobal); }
+      function showToast(msg, tipo='success') { const c = document.getElementById('toast-container'); const t = document.createElement('div'); t.className = `toast ${tipo}`; t.innerHTML = (tipo==='success'?'<i class="ph ph-check-circle" style="font-size:1.5em; color:var(--cor-sucesso)"></i>':'<i class="ph ph-warning-circle" style="font-size:1.5em; color:var(--cor-erro)"></i>') + ` <span>${msg}</span>`; c.appendChild(t); setTimeout(() => { t.style.animation = 'slideOut 0.3s ease-in forwards'; setTimeout(() => t.remove(), 300); }, 3000); }
+      window.corrigirTextoInteligente = function() { var c = document.getElementById('descricao'); var t = c.value.toLowerCase(); var cat = document.getElementById('categoria'); var tipo = document.getElementById('tipo'); if (t.includes('csa')||t.includes('casa')) { c.value="Ajuda em casa"; cat.value="Contas"; tipo.value="Despesa"; } else if (t.includes('claro')||t.includes('plano')) { c.value="Plano Claro"; cat.value="Contas"; tipo.value="Despesa"; } else if (t.includes('mercado')||t.includes('livre')) { c.value="Mercado Livre"; cat.value="Contas"; tipo.value="Despesa"; } else if (t.includes('cbr')||t.includes('moto')) { cat.value="Moto"; tipo.value="Despesa"; } else if (t.includes('lanche')||t.includes('ifood')) { cat.value="Pessoal"; tipo.value="Despesa"; } }
     </script>
   </body>
 </html>
