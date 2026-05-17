@@ -135,7 +135,7 @@
         <h2 id="auth-title">Entrar no Painel</h2>
         <input type="email" id="auth-email" placeholder="Seu E-mail">
         <input type="password" id="auth-pass" placeholder="Sua Senha">
-        <button class="btn-auth" id="btn-auth-action" onclick="autenticar()"><div id="auth-spinner" style="display:none;" class="spinner"></div><span id="auth-text">Entrar</span></button>
+        <button class="btn-auth" id="btn-auth-action" onclick="autenticar()"><div id="auth-spinner" style="display:none;" class="spinner" style="width:20px; height:20px; border-width:2px; border-top-width:2px;"></div><span id="auth-text">Entrar</span></button>
         <button class="btn-switch-auth" onclick="alternarModoAuth()" id="btn-switch-text">Não tem conta? Criar agora.</button>
       </div>
     </div>
@@ -356,8 +356,7 @@
           resumo.saldo = resumo.totalReceitas - resumo.totalGastos;
           atualizarTela(resumo);
         } catch(error) {
-          // AQUI ESTÁ A MÁGICA: Se der erro, ele fica travado na tela para nós lermos!
-          divCarregando.innerHTML = `<i class="ph ph-warning-circle" style="font-size:3em; color:var(--cor-erro)"></i><br><span style="color:var(--cor-erro); text-align:center;"><b>O Firebase Bloqueou o Acesso</b><br>${error.message}</span>`;
+          divCarregando.innerHTML = `<i class="ph ph-warning-circle" style="font-size:3em; color:var(--cor-erro)"></i><br><span style="color:var(--cor-erro); text-align:center;"><b>Erro de Permissão</b><br>${error.message}</span>`;
         }
       }
 
@@ -411,6 +410,20 @@
         document.getElementById('titulo-form').innerText = "Novo Lançamento"; document.getElementById('descricao').value = ''; document.getElementById('valor').value = '';
       }
 
+      // AS FUNÇÕES "FALTANTES" FORAM RECUPERADAS AQUI!
+      function atualizarBarraMeta(idProgresso, idTexto, valorGasto, limite) {
+        var barra = document.getElementById(idProgresso); document.getElementById(idTexto).innerText = `R$ ${limite.toFixed(2)}`;
+        var perc = limite > 0 ? (valorGasto / limite) * 100 : 100;
+        barra.style.width = (perc > 100 ? 100 : perc) + '%'; barra.style.backgroundColor = valorGasto > limite ? 'var(--cor-erro)' : 'var(--cor-sucesso)';
+      }
+
+      function desenharGrafico(resumo) {
+        if (!google || !google.visualization || !google.visualization.arrayToDataTable) return;
+        var data = google.visualization.arrayToDataTable([ ['Categoria', 'Gasto'], ['Contas', resumo.categorias['Contas'] || 0], ['Cartão', resumo.categorias['Cartão de Crédito'] || 0], ['Moto', resumo.categorias['Moto'] || 0], ['Pessoal', resumo.categorias['Pessoal'] || 0], ['Outros', resumo.categorias['Outros'] || 0] ]);
+        var options = { pieHole: 0.55, backgroundColor: 'transparent', legend: { textStyle: { color: document.body.classList.contains('tema-escuro') ? '#f8fafc' : '#1e293b', fontName: 'Poppins', fontSize: 13 }, position: 'right' }, chartArea: {width:'90%',height:'85%'}, colors: ['#4f46e5', '#3b82f6', '#f97316', '#8b5cf6', '#10b981'], pieSliceBorderColor: document.body.classList.contains('tema-escuro') ? '#1e293b' : '#ffffff' };
+        new google.visualization.PieChart(document.getElementById('grafico-despesas')).draw(data, options);
+      }
+
       function atualizarTela(resumo) {
         try {
           resumoGlobal = resumo; historicoGlobal = resumo.historico;
@@ -434,21 +447,8 @@
           document.getElementById('carregando').style.display = 'none';
           document.getElementById('conteudo').style.display = 'flex';
         } catch (e) {
-          document.getElementById('carregando').innerHTML = `<i class="ph ph-warning-circle" style="font-size:3em; color:var(--cor-erro)"></i><br><span style="color:var(--cor-erro)">Erro na Tela: ${e.message}</span>`;
+          showToast("Erro na Tela: " + e.message, "error");
         }
-      }
-
-      function atualizarBarraMeta(idProgresso, idTexto, valorGasto, limite) {
-        var barra = document.getElementById(idProgresso); document.getElementById(idTexto).innerText = `R$ ${limite.toFixed(2)}`;
-        var perc = limite > 0 ? (valorGasto / limite) * 100 : 100;
-        barra.style.width = (perc > 100 ? 100 : perc) + '%'; barra.style.backgroundColor = valorGasto > limite ? 'var(--cor-erro)' : 'var(--cor-sucesso)';
-      }
-
-      function desenharGrafico(resumo) {
-        if (!google || !google.visualization || !google.visualization.arrayToDataTable) return;
-        var data = google.visualization.arrayToDataTable([ ['Categoria', 'Gasto'], ['Contas', resumo.categorias['Contas'] || 0], ['Cartão', resumo.categorias['Cartão de Crédito'] || 0], ['Moto', resumo.categorias['Moto'] || 0], ['Pessoal', resumo.categorias['Pessoal'] || 0], ['Outros', resumo.categorias['Outros'] || 0] ]);
-        var options = { pieHole: 0.55, backgroundColor: 'transparent', legend: { textStyle: { color: document.body.classList.contains('tema-escuro') ? '#f8fafc' : '#1e293b', fontName: 'Poppins', fontSize: 13 }, position: 'right' }, chartArea: {width:'90%',height:'85%'}, colors: ['#4f46e5', '#3b82f6', '#f97316', '#8b5cf6', '#10b981'], pieSliceBorderColor: document.body.classList.contains('tema-escuro') ? '#1e293b' : '#ffffff' };
-        new google.visualization.PieChart(document.getElementById('grafico-despesas')).draw(data, options);
       }
 
       window.renderizarLista = function(lista) {
