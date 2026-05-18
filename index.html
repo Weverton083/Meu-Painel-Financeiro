@@ -4,10 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Meu Painel Financeiro</title>
-
-  <link rel="icon" type="image/jpeg" href="https://images.unsplash.com/photo-1579621970795-87facc2f976d?q=80&w=256&auto=format&fit=crop">
-    <link rel="apple-touch-icon" href="https://images.unsplash.com/photo-1579621970795-87facc2f976d?q=80&w=256&auto=format&fit=crop">
     
+    <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/Weverton083/Meu-Painel-Financeiro/main/image_604ae9.jpg">
+    <link rel="apple-touch-icon" href="https://raw.githubusercontent.com/Weverton083/Meu-Painel-Financeiro/main/image_604ae9.jpg">
+
     <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
@@ -245,7 +245,6 @@
       const formatoMoeda = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
       let minhasMetas = { Contas: 500, Cartao: 1000, Moto: 300, Pessoal: 500, Outros: 300 };
 
-      // Configuração Inicial de Datas antes de carregar
       function setupInicial() {
         if (localStorage.getItem('temaFinanceiro') === 'escuro') { document.body.classList.add('tema-escuro'); document.getElementById('btn-icone-tema').innerHTML = '<i class="ph ph-sun"></i>'; }
         var d = new Date();
@@ -313,7 +312,7 @@
           minhasMetas[categoria] = parseFloat(novo.replace(',','.')); 
           atualizarTela(resumoGlobal); 
           await setDoc(doc(db, "usuarios", currentUser.uid), { metas: minhasMetas }, { merge: true });
-          showToast(`Meta atualizada na nuvem!`, 'success');
+          showToast(`Meta updated on cloud!`, 'success');
         }
       }
 
@@ -413,7 +412,6 @@
         document.getElementById('titulo-form').innerText = "Novo Lançamento"; document.getElementById('descricao').value = ''; document.getElementById('valor').value = '';
       }
 
-      // AS FUNÇÕES "FALTANTES" FORAM RECUPERADAS AQUI!
       function atualizarBarraMeta(idProgresso, idTexto, valorGasto, limite) {
         var barra = document.getElementById(idProgresso); document.getElementById(idTexto).innerText = `R$ ${limite.toFixed(2)}`;
         var perc = limite > 0 ? (valorGasto / limite) * 100 : 100;
