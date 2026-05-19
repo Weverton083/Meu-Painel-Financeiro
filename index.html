@@ -132,7 +132,7 @@
 
     <div id="toast-container"></div>
 
-  <div id="auth-screen">
+<div id="auth-screen">
       <div class="auth-card">
         <i class="ph ph-wallet" style="font-size: 3em; color: var(--cor-primaria); margin-bottom: 10px;"></i>
         <h2 id="auth-title">Entrar no Painel</h2>
@@ -143,13 +143,23 @@
         <button class="btn-switch-auth" onclick="esqueciSenha()" id="btn-esqueci-senha" style="display: block; margin: 10px auto 0 auto; font-size: 0.9em; opacity: 0.8;">Esqueci minha senha</button>
       </div>
     </div>
+
+    <div class="container" id="app-screen" style="display: none;">
+      <div class="cabecalho">
+        <i class="ph ph-wallet" style="font-size: 2em; color: var(--cor-primaria);"></i>
+        <h1>Painel <span>Financeiro</span></h1>
+        <div class="header-actions">
+          <button class="btn-tema" onclick="alternarTema()" id="btn-icone-tema"><i class="ph ph-moon"></i></button>
+          <button class="btn-logout" onclick="fazerLogout()" title="Sair da Conta"><i class="ph ph-sign-out"></i></button>
+        </div>
+      </div>
       
-      <div class="area-filtro">
+      <div class="area-filtro" id="caixa-filtro" style="display: none;">
         <select id="filtro-mes" onchange="carregarDadosFirebase()"><option value="1">Janeiro</option><option value="2">Fevereiro</option><option value="3">Março</option><option value="4">Abril</option><option value="5">Maio</option><option value="6">Junho</option><option value="7">Julho</option><option value="8">Agosto</option><option value="9">Setembro</option><option value="10">Outubro</option><option value="11">Novembro</option><option value="12">Dezembro</option></select>
         <select id="filtro-ano" onchange="carregarDadosFirebase()"><option value="2026">2026</option><option value="2027">2027</option><option value="2028">2028</option><option value="2029">2029</option><option value="2030">2030</option></select>
       </div>
 
-      <div id="carregando"><div class="spinner"></div><span id="texto-carregando">Lendo banco de dados...</span></div>
+      <div id="carregando" style="display: none;"><div class="spinner"></div><span id="texto-carregando">Lendo banco de dados...</span></div>
 
       <div class="conteudo-principal" id="conteudo" style="display: none;">
         <div class="coluna-painel">
@@ -210,8 +220,9 @@
 
     <script type="module">
       import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
-      import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js";
+      import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js";
       import { getFirestore, collection, addDoc, getDocs, query, where, deleteDoc, doc, updateDoc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
+    
 
       const firebaseConfig = {
         apiKey: "AIzaSyAN8paneK7-vVWZLStblw83K-ay4nMUmrc",
@@ -290,19 +301,14 @@
         document.getElementById('btn-auth-action').disabled = false;
       }
 
-      window.fazerLogout = function() { signOut(auth); }
-
-      // FUNÇÃO NOVA PARA ENVIAR E-MAIL DE RECUPERAÇÃO
-      import { sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js";
-
-      window.esqueciSenha = async function() {
+     window.esqueciSenha = async function() {
         const email = document.getElementById('auth-email').value;
         if(!email) return showToast("Digite seu e-mail no campo acima primeiro!", "error");
         
         if(confirm(`Deseja enviar um link de redefinição de senha para o e-mail: ${email}?`)) {
           try {
             await sendPasswordResetEmail(auth, email);
-            showToast("E-mail de redefinição enviado! Verifique sua caixa de entrada ou spam.", "success");
+            showToast("E-mail de redefinição enviado! Verifique sua caixa de entrada.", "success");
           } catch(error) {
             showToast("Erro ao enviar: " + error.message, "error");
           }
