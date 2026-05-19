@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Meu Painel Financeiro</title>
     
-  <link rel="icon" type="image/png" href="icone.png?v=50">
+    <link rel="icon" type="image/png" href="icone.png?v=50">
     <link rel="apple-touch-icon" href="icone.png?v=50">
 
     <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
@@ -132,7 +132,7 @@
 
     <div id="toast-container"></div>
 
-<div id="auth-screen">
+    <div id="auth-screen">
       <div class="auth-card">
         <i class="ph ph-wallet" style="font-size: 3em; color: var(--cor-primaria); margin-bottom: 10px;"></i>
         <h2 id="auth-title">Entrar no Painel</h2>
@@ -154,12 +154,12 @@
         </div>
       </div>
       
-      <div class="area-filtro" id="caixa-filtro" style="display: none;">
+      <div class="area-filtro">
         <select id="filtro-mes" onchange="carregarDadosFirebase()"><option value="1">Janeiro</option><option value="2">Fevereiro</option><option value="3">Março</option><option value="4">Abril</option><option value="5">Maio</option><option value="6">Junho</option><option value="7">Julho</option><option value="8">Agosto</option><option value="9">Setembro</option><option value="10">Outubro</option><option value="11">Novembro</option><option value="12">Dezembro</option></select>
         <select id="filtro-ano" onchange="carregarDadosFirebase()"><option value="2026">2026</option><option value="2027">2027</option><option value="2028">2028</option><option value="2029">2029</option><option value="2030">2030</option></select>
       </div>
 
-      <div id="carregando" style="display: none;"><div class="spinner"></div><span id="texto-carregando">Lendo banco de dados...</span></div>
+      <div id="carregando"><div class="spinner"></div><span id="texto-carregando">Lendo banco de dados...</span></div>
 
       <div class="conteudo-principal" id="conteudo" style="display: none;">
         <div class="coluna-painel">
@@ -216,13 +216,10 @@
           </div>
         </div>
       </div>
-    </div>
-
-    <script type="module">
+    </div> <script type="module">
       import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
       import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js";
       import { getFirestore, collection, addDoc, getDocs, query, where, deleteDoc, doc, updateDoc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
-    
 
       const firebaseConfig = {
         apiKey: "AIzaSyAN8paneK7-vVWZLStblw83K-ay4nMUmrc",
@@ -276,9 +273,8 @@
         document.getElementById('auth-title').innerText = modoLogin ? "Entrar no Painel" : "Criar Nova Conta";
         document.getElementById('auth-text').innerText = modoLogin ? "Entrar" : "Cadastrar";
         document.getElementById('btn-switch-text').innerText = modoLogin ? "Não tem conta? Criar agora." : "Já tem conta? Entrar.";
-        document.getElementById('btn-esqueci-senha').style.display = modoLogin ? "block" : "none"; // Esconde ou mostra o botão
+        document.getElementById('btn-esqueci-senha').style.display = modoLogin ? "block" : "none";
       }
-      
 
       window.autenticar = async function() {
         const email = document.getElementById('auth-email').value;
@@ -301,7 +297,7 @@
         document.getElementById('btn-auth-action').disabled = false;
       }
 
-     window.esqueciSenha = async function() {
+      window.esqueciSenha = async function() {
         const email = document.getElementById('auth-email').value;
         if(!email) return showToast("Digite seu e-mail no campo acima primeiro!", "error");
         
@@ -314,6 +310,8 @@
           }
         }
       }
+
+      window.fazerLogout = function() { signOut(auth); }
 
       async function carregarMetas() {
         try {
@@ -401,7 +399,7 @@
       window.apagarItem = async function(id) {
         if(window.confirm("Apagar registro definitivamente?")) {
           document.getElementById('carregando').style.display = 'flex'; document.getElementById('conteudo').style.display = 'none';
-          try { await deleteDoc(doc(db, "lancamentos", id)); showToast('Apagado!'); window.carregarDadosFirebase(); } 
+          try { deleteDoc(doc(db, "lancamentos", id)); showToast('Apagado!'); window.carregarDadosFirebase(); } 
           catch(e) { showToast(e.message, 'error'); }
         }
       }
