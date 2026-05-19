@@ -133,16 +133,8 @@
     <div id="toast-container"></div>
 
     <div id="auth-screen">
+      <div id="auth-screen">
       <div class="auth-card">
-        <i class="ph ph-wallet" style="font-size: 3em; color: var(--cor-primaria); margin-bottom: 10px;"></i>
-        <h2 id="auth-title">Entrar no Painel</h2>
-        <input type="email" id="auth-email" placeholder="Seu E-mail">
-        <input type="password" id="auth-pass" placeholder="Sua Senha">
-        <button class="btn-auth" id="btn-auth-action" onclick="autenticar()"><div id="auth-spinner" style="display:none;" class="spinner" style="width:20px; height:20px; border-width:2px; border-top-width:2px;"></div><span id="auth-text">Entrar</span></button>
-        <button class="btn-switch-auth" onclick="alternarModoAuth()" id="btn-switch-text">Não tem conta? Criar agora.</button>
-      </div>
-    </div>
-<div class="auth-card">
         <i class="ph ph-wallet" style="font-size: 3em; color: var(--cor-primaria); margin-bottom: 10px;"></i>
         <h2 id="auth-title">Entrar no Painel</h2>
         <input type="email" id="auth-email" placeholder="Seu E-mail">
@@ -151,15 +143,7 @@
         <button class="btn-switch-auth" onclick="alternarModoAuth()" id="btn-switch-text">Não tem conta? Criar agora.</button>
         <button class="btn-switch-auth" onclick="esqueciSenha()" id="btn-esqueci-senha" style="display: block; margin: 10px auto 0 auto; font-size: 0.9em; opacity: 0.8;">Esqueci minha senha</button>
       </div>
-    <div class="container" id="app-screen" style="display: none;">
-      <div class="cabecalho">
-        <i class="ph ph-wallet" style="font-size: 2em; color: var(--cor-primaria);"></i>
-        <h1>Painel <span>Financeiro</span></h1>
-        <div class="header-actions">
-          <button class="btn-tema" onclick="alternarTema()" id="btn-icone-tema"><i class="ph ph-moon"></i></button>
-          <button class="btn-logout" onclick="fazerLogout()" title="Sair da Conta"><i class="ph ph-sign-out"></i></button>
-        </div>
-      </div>
+    </div>
       
       <div class="area-filtro">
         <select id="filtro-mes" onchange="carregarDadosFirebase()"><option value="1">Janeiro</option><option value="2">Fevereiro</option><option value="3">Março</option><option value="4">Abril</option><option value="5">Maio</option><option value="6">Junho</option><option value="7">Julho</option><option value="8">Agosto</option><option value="9">Setembro</option><option value="10">Outubro</option><option value="11">Novembro</option><option value="12">Dezembro</option></select>
