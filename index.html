@@ -34,7 +34,7 @@
       body { font-family: 'Poppins', sans-serif; background-color: var(--cor-fundo); color: var(--cor-texto); margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; transition: 0.3s; min-height: 100vh;}
       .container { max-width: 1400px; width: 100%; }
       
-      /* --- NOVA TELA DE LOGIN PREMIUM (SISTEMA INTEGRADO) --- */
+      /* --- TELA DE LOGIN PREMIUM --- */
       #auth-screen { 
         display: flex; 
         min-height: 100vh; 
@@ -47,7 +47,6 @@
         overflow: hidden;
       }
 
-      /* Efeito Bokeh - Luzes de Fundo */
       #auth-screen::before, #auth-screen::after {
         content: "";
         position: absolute;
@@ -282,7 +281,6 @@
 
     <div id="auth-screen">
       <div class="auth-container">
-        
         <div class="auth-sidebar">
           <i class="ph ph-wallet" style="font-size: 3.5em; color: #818cf8; margin-bottom: 20px;"></i>
           <h3>Controle seu dinheiro,<br>conquiste sua <span>liberdade</span>.</h3>
@@ -315,7 +313,6 @@
             </div>
           </div>
         </div>
-
       </div>
     </div>
 
@@ -373,7 +370,14 @@
             <div class="grupo-input"><label>Tipo de Registro</label><div class="input-icone-wrapper"><i class="ph ph-arrows-down-up"></i>
               <select id="tipo"><option value="Despesa">Saída (Despesa)</option><option value="Receita">Entrada (Receita)</option></select>
             </div></div>
-            <div class="grupo-input"><label>Data</label><div class="input-icone-wrapper"><i class="ph ph-calendar-blank"></i><input type="date" id="data"></div></div>
+            <div class="grupo-input"><label>Data do Pagamento/Recebimento (Real)</label><div class="input-icone-wrapper"><i class="ph ph-calendar-blank"></i><input type="date" id="data" onchange="sugerirMesReferencia(this.value)"></div></div>
+            
+            <div class="grupo-input"><label>Contar este valor em qual Mês? (Destino)</label><div class="input-icone-wrapper"><i class="ph ph-calendar-star"></i>
+              <select id="mes-referencia">
+                <option value="1">Janeiro</option><option value="2">Fevereiro</option><option value="3">Março</option><option value="4">Abril</option><option value="5">Maio</option><option value="6">Junho</option><option value="7">Julho</option><option value="8">Agosto</option><option value="9">Setembro</option><option value="10">Outubro</option><option value="11">Novembro</option><option value="12">Dezembro</option>
+              </select>
+            </div></div>
+
             <div class="grupo-input"><label>Descrição</label><div class="input-icone-wrapper"><i class="ph ph-text-t"></i><input type="text" id="descricao" onkeyup="corrigirTextoInteligente()" placeholder="O que você pagou?"></div></div>
             <div class="grupo-input"><label>Categoria</label><div class="input-icone-wrapper"><i class="ph ph-tag"></i>
               <select id="categoria">
@@ -427,9 +431,17 @@
         document.getElementById('filtro-mes').value = d.getMonth() + 1;
         document.getElementById('filtro-ano').value = d.getFullYear();
         document.getElementById('data').value = d.toISOString().split('T')[0];
+        document.getElementById('mes-referencia').value = d.getMonth() + 1;
       }
       setupInicial();
       google.charts.load('current', {'packages':['corechart']});
+
+      window.sugerirMesReferencia = function(dataStr) {
+        if(!dataStr) return;
+        let partes = dataStr.split('-');
+        let mes = parseInt(partes[1]);
+        document.getElementById('mes-referencia').value = mes;
+      }
 
       onAuthStateChanged(auth, async (user) => {
         if (user) {
@@ -525,12 +537,19 @@
           let todosDados = [];
 
           querySnapshot.forEach((doc) => { todosDados.push({ id: doc.id, ...doc.data() }); });
-          todosDados.sort((a, b) => new Date(b.data || "2000-01-01") - new Date(a.data || "2000-01-01"));
+          todosDados.sort((a, b) => {
+            return new Date(b.data || "2000-01-01") - new Date(a.data || "2000-01-01");
+          });
 
           todosDados.forEach(item => {
             if(!item.data) return;
-            let d = new Date(item.data + "T12:00:00"); 
-            if(d.getMonth() + 1 === mesDesejado && d.getFullYear() === anoDesejado) {
+            
+            // LÓGICA DE INTELIGÊNCIA TEMPORAL: SE NÃO EXISTIR O CAMPO NO BANCO, ELE PEGA O MÊS DA DATA REAL
+            let partesReal = item.data.split('-');
+            let mesDoItem = item.mesReferencia ? parseInt(item.mesReferencia) : parseInt(partesReal[1]);
+            let anoDoItem = parseInt(partesReal[0]); // Mantém o ano da data real
+
+            if(mesDoItem === mesDesejado && anoDoItem === anoDesejado) {
               let valor = parseFloat(item.valor) || 0;
               let cat = item.categoria || "Outros";
               
@@ -541,7 +560,8 @@
                 else resumo.categorias["Outros"] += valor;
               }
 
-              item.dataParaTela = d.toLocaleDateString('pt-BR');
+              let dReal = new Date(item.data + "T12:00:00");
+              item.dataParaTela = dReal.toLocaleDateString('pt-BR');
               item.dataParaFormulario = item.data;
               resumo.historico.push(item);
             }
@@ -560,9 +580,14 @@
         btn.innerHTML = '<div class="spinner" style="width:20px;height:20px;"></div>'; btn.disabled = true;
 
         var dados = {
-          uid: currentUser.uid, tipo: document.getElementById('tipo').value, data: document.getElementById('data').value,
-          descricao: document.getElementById('descricao').value || "Diversos", categoria: document.getElementById('categoria').value,
-          status: document.getElementById('status').value, valor: parseFloat(document.getElementById('valor').value)
+          uid: currentUser.uid, 
+          tipo: document.getElementById('tipo').value, 
+          data: document.getElementById('data').value,
+          mesReferencia: parseInt(document.getElementById('mes-referencia').value), // SALVA O MÊS DESTINO
+          descricao: document.getElementById('descricao').value || "Diversos", 
+          categoria: document.getElementById('categoria').value,
+          status: document.getElementById('status').value, 
+          valor: parseFloat(document.getElementById('valor').value)
         };
         
         try {
@@ -577,7 +602,7 @@
       window.apagarItem = async function(id) {
         if(window.confirm("Apagar registro definitivamente?")) {
           document.getElementById('carregando').style.display = 'flex'; document.getElementById('conteudo').style.display = 'none';
-          try { deleteDoc(doc(db, "lancamentos", id)); showToast('Apagado!'); window.carregarDadosFirebase(); } 
+          try { await deleteDoc(doc(db, "lancamentos", id)); showToast('Apagado!'); window.carregarDadosFirebase(); } 
           catch(e) { showToast(e.message, 'error'); }
         }
       }
@@ -592,16 +617,25 @@
         var item = historicoGlobal.find(i => i.id === id);
         if(!item) return;
         idEmEdicao = item.id;
-        document.getElementById('tipo').value = item.tipo; document.getElementById('data').value = item.dataParaFormulario;
-        document.getElementById('descricao').value = item.descricao; document.getElementById('categoria').value = item.categoria;
-        document.getElementById('valor').value = item.valor; document.getElementById('status').value = item.status;
-        document.getElementById('btn-cancelar').style.display = 'block'; document.getElementById('titulo-form').innerText = "Editando Registro";
+        document.getElementById('tipo').value = item.tipo; 
+        document.getElementById('data').value = item.dataParaFormulario;
+        
+        let partes = item.data.split('-');
+        document.getElementById('mes-referencia').value = item.mesReferencia ? item.mesReferencia : parseInt(partes[1]);
+        
+        document.getElementById('descricao').value = item.descricao; 
+        document.getElementById('categoria').value = item.categoria;
+        document.getElementById('valor').value = item.valor; 
+        document.getElementById('status').value = item.status;
+        document.getElementById('btn-cancelar').style.display = 'block'; 
+        document.getElementById('titulo-form').innerText = "Editando Registro";
         document.getElementById('titulo-form').scrollIntoView({behavior: "smooth", block: "start"});
       }
 
       window.cancelarEdicao = function() {
         idEmEdicao = null; document.getElementById('btn-cancelar').style.display = 'none';
         document.getElementById('titulo-form').innerText = "Novo Lançamento"; document.getElementById('descricao').value = ''; document.getElementById('valor').value = '';
+        var d = new Date(); document.getElementById('mes-referencia').value = d.getMonth() + 1;
       }
 
       function atualizarBarraMeta(idProgresso, idTexto, valorGasto, limite) {
