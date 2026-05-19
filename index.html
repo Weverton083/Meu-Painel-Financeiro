@@ -34,14 +34,162 @@
       body { font-family: 'Poppins', sans-serif; background-color: var(--cor-fundo); color: var(--cor-texto); margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; transition: 0.3s; min-height: 100vh;}
       .container { max-width: 1400px; width: 100%; }
       
-      /* --- TELA DE LOGIN --- */
-      #auth-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 80vh; width: 100%; }
-      .auth-card { background: var(--cor-cartao); padding: 40px; border-radius: 24px; box-shadow: var(--sombra); width: 100%; max-width: 400px; text-align: center; border: 1px solid var(--cor-borda); }
-      .auth-card h2 { margin-top: 0; font-size: 1.8em; font-weight: 700; color: var(--cor-texto); margin-bottom: 25px;}
-      .auth-card input { margin-bottom: 15px; padding-left: 20px;}
-      .btn-auth { background: var(--cor-primaria); color: white; border: none; padding: 15px; border-radius: 12px; font-weight: 600; width: 100%; font-size: 1.1em; cursor: pointer; transition: 0.3s; box-shadow: 0 4px 15px rgba(79, 70, 229, 0.3);}
-      .btn-auth:hover { background: #4338ca; transform: translateY(-2px); }
-      .btn-switch-auth { background: transparent; border: none; color: var(--cor-texto-secundario); margin-top: 15px; cursor: pointer; font-family: 'Poppins'; font-weight: 500; text-decoration: underline;}
+      /* --- NOVA TELA DE LOGIN PREMIUM (SISTEMA INTEGRADO) --- */
+      #auth-screen { 
+        display: flex; 
+        min-height: 100vh; 
+        width: 100%; 
+        position: fixed; 
+        top: 0; 
+        left: 0; 
+        z-index: 9999;
+        background: #0f172a;
+        overflow: hidden;
+      }
+
+      /* Efeito Bokeh - Luzes de Fundo */
+      #auth-screen::before, #auth-screen::after {
+        content: "";
+        position: absolute;
+        width: 450px;
+        height: 450px;
+        border-radius: 50%;
+        filter: blur(130px);
+        opacity: 0.22;
+        z-index: 1;
+      }
+      #auth-screen::before { top: -10%; left: -5%; background: #4f46e5; }
+      #auth-screen::after { bottom: -10%; right: -5%; background: #06b6d4; }
+
+      .auth-container {
+        display: flex;
+        width: 100%;
+        max-width: 100%;
+        z-index: 2;
+      }
+
+      .auth-sidebar {
+        flex: 1.2;
+        background: linear-gradient(135deg, rgba(30, 27, 75, 0.3), rgba(15, 23, 42, 0.75));
+        backdrop-filter: blur(20px);
+        border-right: 1px solid rgba(255, 255, 255, 0.05);
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        padding: 60px;
+        color: white;
+      }
+
+      .auth-sidebar h3 {
+        font-size: 2.6em;
+        font-weight: 700;
+        margin: 0 0 15px 0;
+        line-height: 1.2;
+        letter-spacing: -0.5px;
+      }
+      .auth-sidebar h3 span { color: #818cf8; }
+      .auth-sidebar p {
+        color: #94a3b8;
+        font-size: 1.1em;
+        margin: 0;
+        max-width: 440px;
+        line-height: 1.6;
+      }
+
+      .auth-content {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 40px;
+      }
+
+      .auth-card { 
+        background: rgba(30, 41, 59, 0.65); 
+        backdrop-filter: blur(16px);
+        padding: 45px 40px; 
+        border-radius: 28px; 
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); 
+        width: 100%; 
+        max-width: 420px; 
+        text-align: center; 
+        border: 1px solid rgba(255, 255, 255, 0.08); 
+      }
+      
+      .auth-card h2 { margin-top: 0; font-size: 1.8em; font-weight: 700; color: #f8fafc; margin-bottom: 6px;}
+      .auth-subtitle { color: #94a3b8; font-size: 0.95em; margin-bottom: 30px; display: block; }
+      
+      .auth-input-group {
+        position: relative;
+        margin-bottom: 18px;
+        text-align: left;
+      }
+      .auth-input-group i {
+        position: absolute;
+        left: 16px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #94a3b8;
+        font-size: 1.2em;
+        transition: 0.3s;
+        pointer-events: none;
+      }
+      .auth-input-group input { 
+        width: 100%;
+        padding: 15px 15px 15px 48px !important; 
+        border-radius: 14px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        background: rgba(15, 23, 42, 0.5);
+        color: #f8fafc;
+        font-size: 0.95em;
+        outline: none;
+        transition: 0.3s;
+      }
+      .auth-input-group input:focus {
+        border-color: #818cf8;
+        box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.15);
+      }
+      .auth-input-group input:focus + i { color: #818cf8; }
+
+      .btn-auth { 
+        background: #4f46e5; 
+        color: white; 
+        border: none; 
+        padding: 16px; 
+        border-radius: 14px; 
+        font-weight: 600; 
+        width: 100%; 
+        font-size: 1em; 
+        cursor: pointer; 
+        transition: 0.3s; 
+        box-shadow: 0 4px 20px rgba(79, 70, 229, 0.4);
+        margin-top: 10px;
+      }
+      .btn-auth:hover { background: #4338ca; transform: translateY(-1px); }
+      
+      .auth-footer-actions {
+        margin-top: 25px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+      .btn-switch-auth { 
+        background: transparent; 
+        border: none; 
+        color: #94a3b8; 
+        cursor: pointer; 
+        font-family: 'Poppins'; 
+        font-weight: 500; 
+        font-size: 0.9em;
+        text-decoration: none;
+        transition: 0.2s;
+        outline: none;
+      }
+      .btn-switch-auth:hover { color: #f8fafc; text-decoration: underline; }
+
+      @media (max-width: 868px) {
+        .auth-sidebar { display: none; }
+      }
       
       /* --- HEADER --- */
       .cabecalho { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
@@ -133,14 +281,41 @@
     <div id="toast-container"></div>
 
     <div id="auth-screen">
-      <div class="auth-card">
-        <i class="ph ph-wallet" style="font-size: 3em; color: var(--cor-primaria); margin-bottom: 10px;"></i>
-        <h2 id="auth-title">Entrar no Painel</h2>
-        <input type="email" id="auth-email" placeholder="Seu E-mail">
-        <input type="password" id="auth-pass" placeholder="Sua Senha">
-        <button class="btn-auth" id="btn-auth-action" onclick="autenticar()"><div id="auth-spinner" style="display:none;" class="spinner" style="width:20px; height:20px; border-width:2px; border-top-width:2px;"></div><span id="auth-text">Entrar</span></button>
-        <button class="btn-switch-auth" onclick="alternarModoAuth()" id="btn-switch-text">Não tem conta? Criar agora.</button>
-        <button class="btn-switch-auth" onclick="esqueciSenha()" id="btn-esqueci-senha" style="display: block; margin: 10px auto 0 auto; font-size: 0.9em; opacity: 0.8;">Esqueci minha senha</button>
+      <div class="auth-container">
+        
+        <div class="auth-sidebar">
+          <i class="ph ph-wallet" style="font-size: 3.5em; color: #818cf8; margin-bottom: 20px;"></i>
+          <h3>Controle seu dinheiro,<br>conquiste sua <span>liberdade</span>.</h3>
+          <p>Seu ecossistema financeiro integrado na nuvem para gerenciar despesas, analisar categorias e bater metas mensais.</p>
+        </div>
+
+        <div class="auth-content">
+          <div class="auth-card">
+            <h2 id="auth-title">Entrar no Painel</h2>
+            <span class="auth-subtitle" id="auth-subtitle-text">Seja bem-vindo de volta!</span>
+            
+            <div class="auth-input-group">
+              <input type="email" id="auth-email" placeholder="Seu E-mail">
+              <i class="ph ph-envelope-simple"></i>
+            </div>
+            
+            <div class="auth-input-group">
+              <input type="password" id="auth-pass" placeholder="Sua Senha">
+              <i class="ph ph-lock-simple"></i>
+            </div>
+            
+            <button class="btn-auth" id="btn-auth-action" onclick="autenticar()">
+              <div id="auth-spinner" style="display:none;" class="spinner" style="width:20px; height:20px; border-width:2px; border-top-color:transparent;"></div>
+              <span id="auth-text">Acessar Painel</span>
+            </button>
+            
+            <div class="auth-footer-actions">
+              <button class="btn-switch-auth" onclick="alternarModoAuth()" id="btn-switch-text">Não tem conta? Criar agora.</button>
+              <button class="btn-switch-auth" onclick="esqueciSenha()" id="btn-esqueci-senha">Esqueci minha senha</button>
+            </div>
+          </div>
+        </div>
+
       </div>
     </div>
 
@@ -216,7 +391,9 @@
           </div>
         </div>
       </div>
-    </div> <script type="module">
+    </div>
+
+    <script type="module">
       import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
       import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js";
       import { getFirestore, collection, addDoc, getDocs, query, where, deleteDoc, doc, updateDoc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
@@ -271,7 +448,8 @@
       window.alternarModoAuth = function() {
         modoLogin = !modoLogin;
         document.getElementById('auth-title').innerText = modoLogin ? "Entrar no Painel" : "Criar Nova Conta";
-        document.getElementById('auth-text').innerText = modoLogin ? "Entrar" : "Cadastrar";
+        document.getElementById('auth-subtitle-text').innerText = modoLogin ? "Seja bem-vindo de volta!" : "Cadastre-se para começar a controlar seus gastos.";
+        document.getElementById('auth-text').innerText = modoLogin ? "Acessar Painel" : "Criar Conta";
         document.getElementById('btn-switch-text').innerText = modoLogin ? "Não tem conta? Criar agora." : "Já tem conta? Entrar.";
         document.getElementById('btn-esqueci-senha').style.display = modoLogin ? "block" : "none";
       }
