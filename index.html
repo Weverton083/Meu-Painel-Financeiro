@@ -142,7 +142,15 @@
         <button class="btn-switch-auth" onclick="alternarModoAuth()" id="btn-switch-text">Não tem conta? Criar agora.</button>
       </div>
     </div>
-
+<div class="auth-card">
+        <i class="ph ph-wallet" style="font-size: 3em; color: var(--cor-primaria); margin-bottom: 10px;"></i>
+        <h2 id="auth-title">Entrar no Painel</h2>
+        <input type="email" id="auth-email" placeholder="Seu E-mail">
+        <input type="password" id="auth-pass" placeholder="Sua Senha">
+        <button class="btn-auth" id="btn-auth-action" onclick="autenticar()"><div id="auth-spinner" style="display:none;" class="spinner" style="width:20px; height:20px; border-width:2px; border-top-width:2px;"></div><span id="auth-text">Entrar</span></button>
+        <button class="btn-switch-auth" onclick="alternarModoAuth()" id="btn-switch-text">Não tem conta? Criar agora.</button>
+        <button class="btn-switch-auth" onclick="esqueciSenha()" id="btn-esqueci-senha" style="display: block; margin: 10px auto 0 auto; font-size: 0.9em; opacity: 0.8;">Esqueci minha senha</button>
+      </div>
     <div class="container" id="app-screen" style="display: none;">
       <div class="cabecalho">
         <i class="ph ph-wallet" style="font-size: 2em; color: var(--cor-primaria);"></i>
@@ -268,13 +276,15 @@
           document.getElementById('app-screen').style.display = 'none';
         }
       });
-
+        
       window.alternarModoAuth = function() {
         modoLogin = !modoLogin;
         document.getElementById('auth-title').innerText = modoLogin ? "Entrar no Painel" : "Criar Nova Conta";
         document.getElementById('auth-text').innerText = modoLogin ? "Entrar" : "Cadastrar";
         document.getElementById('btn-switch-text').innerText = modoLogin ? "Não tem conta? Criar agora." : "Já tem conta? Entrar.";
+        document.getElementById('btn-esqueci-senha').style.display = modoLogin ? "block" : "none"; // Esconde ou mostra o botão
       }
+      
 
       window.autenticar = async function() {
         const email = document.getElementById('auth-email').value;
@@ -298,6 +308,23 @@
       }
 
       window.fazerLogout = function() { signOut(auth); }
+
+      // FUNÇÃO NOVA PARA ENVIAR E-MAIL DE RECUPERAÇÃO
+      import { sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js";
+
+      window.esqueciSenha = async function() {
+        const email = document.getElementById('auth-email').value;
+        if(!email) return showToast("Digite seu e-mail no campo acima primeiro!", "error");
+        
+        if(confirm(`Deseja enviar um link de redefinição de senha para o e-mail: ${email}?`)) {
+          try {
+            await sendPasswordResetEmail(auth, email);
+            showToast("E-mail de redefinição enviado! Verifique sua caixa de entrada ou spam.", "success");
+          } catch(error) {
+            showToast("Erro ao enviar: " + error.message, "error");
+          }
+        }
+      }
 
       async function carregarMetas() {
         try {
