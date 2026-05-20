@@ -177,17 +177,35 @@
       .valor-receita input, .valor-receita i { color: var(--cor-sucesso) !important; }
       .valor-despesa input, .valor-despesa i { color: var(--cor-erro) !important; }
 
+      /* --- AJUSTES RESPONSIVOS (CELULAR COM CARA DE APP NATIVO) --- */
       @media (max-width: 600px) {
-        .cabecalho { flex-direction: column; align-items: stretch; text-align: center; }
-        h1 { text-align: center; }
-        .relogio-digital { justify-content: center; }
-        .header-actions { justify-content: center; }
+        /* Cabeçalho mais compacto e organizado */
+        .cabecalho { flex-wrap: wrap; flex-direction: row; align-items: center; gap: 10px; }
+        h1 { font-size: 1.4em; text-align: left; }
+        .header-actions { order: 3; }
+        .relogio-digital { order: 4; width: 100%; justify-content: center; margin-top: 5px; }
+        
+        /* Filtro ocupando a tela com elegância */
+        .controle-tempo { width: 100%; justify-content: center; }
+
+        /* MÁGICA: Cards menores lado a lado (2 colunas) */
+        .painel-resumo { gap: 10px; }
+        .cartao-sub { gap: 10px; }
+        .cartao-receita, .cartao-gasto { padding: 15px; }
+        .cartao-receita p, .cartao-gasto p { font-size: 1.6em; }
+        
+        .cartao-categoria { 
+          flex: 1 1 calc(50% - 10px) !important; 
+          min-width: 140px !important; 
+          padding: 15px; 
+        }
+        .cartao-categoria h3 { font-size: 0.85em; }
+        .cartao-categoria p { font-size: 1.3em; margin-top: 5px; }
+        
+        /* Mantém a trava de segurança do Formulário (1 coluna) */
         .form-grid { grid-template-columns: 1fr; }
         .grid-full { grid-column: span 1; }
       }
-    </style>
-  </head>
-  <body>
 
     <div id="toast-container"></div>
 
