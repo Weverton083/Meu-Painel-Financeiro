@@ -73,7 +73,6 @@
 
       @media (max-width: 868px) { .auth-sidebar { display: none; } }
       
-      /* --- HEADER & RELÓGIO --- */
       .cabecalho { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; gap: 15px; }
       h1 { color: var(--cor-texto); margin: 0; font-size: 1.8em; font-weight: 700; text-align: left; flex-grow: 1; letter-spacing: -0.5px;}
       h1 span { color: var(--cor-primaria); }
@@ -206,6 +205,9 @@
         .form-grid { grid-template-columns: 1fr; }
         .grid-full { grid-column: span 1; }
       }
+    </style>
+  </head>
+  <body>
 
     <div id="toast-container"></div>
 
@@ -716,37 +718,3 @@
           window.filtrarLista(); 
           document.getElementById('carregando').style.display = 'none';
           document.getElementById('conteudo').style.display = 'flex';
-        } catch (e) {
-          showToast("Erro na Tela: " + e.message, "error");
-        }
-      }
-
-      window.renderizarLista = function(lista) {
-        var div = document.getElementById('lista-historico'); div.innerHTML = '';
-        if(lista.length === 0) { div.innerHTML = '<p style="text-align:center; color:var(--cor-texto-secundario); margin-top:20px;">Nenhum item encontrado.</p>'; return; }
-        lista.forEach(function(item) {
-          var cor = item.tipo === 'Receita' ? 'var(--cor-sucesso)' : (item.status === 'Pago' ? 'var(--cor-sucesso)' : 'var(--cor-texto)');
-          var op = item.status === 'Pago' ? 'opacity:0.6;' : '';
-          var ico = item.status === 'Pago' ? '<i class="ph ph-check"></i> Pago' : '<i class="ph ph-hourglass"></i> Pendente';
-          div.innerHTML += `<div class="item-historico" style="${op}"><div class="info-historico"><strong>${item.descricao}</strong><span><i class="ph ph-calendar-blank"></i> ${item.dataParaTela} &nbsp;&bull;&nbsp; ${item.categoria} &nbsp;&bull;&nbsp; <strong style="color:${cor}">${item.tipo==='Receita'?'+':'-'} ${formatoMoeda.format(item.valor)}</strong></span></div><div class="acoes-historico"><button class="badge-status ${item.status==='Pago'?'pago':'pendente'}" onclick="trocarStatus('${item.id}', '${item.status}')">${ico}</button><button class="btn-icone" onclick="prepararEdicao('${item.id}')"><i class="ph ph-pencil-simple"></i></button><button class="btn-icone excluir" onclick="apagarItem('${item.id}')"><i class="ph ph-trash"></i></button></div></div>`;
-        });
-      }
-
-      window.aplicarFiltroRapido = function(tipo, btnClicado) { filtroRapidoAtivo = tipo; document.querySelectorAll('.btn-pilula').forEach(b => b.classList.remove('ativo')); btnClicado.classList.add('ativo'); window.filtrarLista(); }
-      window.filtrarLista = function() { var busca = document.getElementById('campo-busca').value.toLowerCase(); var filtrada = historicoGlobal.filter(function(i) { var passTxt = (i.descricao + " " + i.categoria).toLowerCase().includes(busca); var passPil = filtroRapidoAtivo==='Todas' || (filtroRapidoAtivo==='Receita'&&i.tipo==='Receita') || (filtroRapidoAtivo==='Despesa'&&i.tipo==='Despesa') || (filtroRapidoAtivo==='Pendente'&&i.status==='Pendente'); return passTxt && passPil; }); window.renderizarLista(filtrada); }
-      window.alternarTema = function() { document.body.classList.toggle('tema-escuro'); const icon = document.getElementById('btn-icone-tema'); if(document.body.classList.contains('tema-escuro')) { icon.innerHTML = '<i class="ph ph-sun"></i>'; localStorage.setItem('temaFinanceiro', 'escuro'); } else { icon.innerHTML = '<i class="ph ph-moon"></i>'; localStorage.setItem('temaFinanceiro', 'claro'); } if (resumoGlobal) desenharGrafico(resumoGlobal); }
-      function showToast(msg, tipo='success') { const c = document.getElementById('toast-container'); const t = document.createElement('div'); t.className = `toast ${tipo}`; t.innerHTML = (tipo==='success'?'<i class="ph ph-check-circle" style="font-size:1.5em; color:var(--cor-sucesso)"></i>':'<i class="ph ph-warning-circle" style="font-size:1.5em; color:var(--cor-erro)"></i>') + ` <span>${msg}</span>`; c.appendChild(t); setTimeout(() => { t.style.animation = 'slideOut 0.3s ease-in forwards'; setTimeout(() => t.remove(), 300); }, 3000); }
-      
-      // INTELIGÊNCIA ARTIFICIAL DE TEXTO ATUALIZADA PARA AS NOVAS CATEGORIAS
-      window.corrigirTextoInteligente = function() { 
-        var c = document.getElementById('descricao'); var t = c.value.toLowerCase(); var cat = document.getElementById('categoria'); var tipo = document.getElementById('tipo'); 
-        
-        if (t.includes('csa')||t.includes('casa')||t.includes('aluguel')||t.includes('luz')||t.includes('net')||t.includes('gás')||t.includes('gas')||t.includes('claro')||t.includes('plano')) { cat.value="Contas Fixas"; tipo.value="Despesa"; } 
-        else if (t.includes('dentista')||t.includes('farmácia')||t.includes('remedio')||t.includes('médico')||t.includes('medico')) { cat.value="Saúde & Cuidados"; tipo.value="Despesa"; } 
-        else if (t.includes('mercado')||t.includes('padaria')||t.includes('lanche')||t.includes('ifood')||t.includes('pizza')||t.includes('espetinho')) { cat.value="Alimentação"; tipo.value="Despesa"; } 
-        else if (t.includes('cbr')||t.includes('moto')||t.includes('uber')||t.includes('carro')||t.includes('posto')) { cat.value="Transporte"; tipo.value="Despesa"; } 
-        else if (t.includes('cinema')||t.includes('shopping')||t.includes('festa')||t.includes('compras')||t.includes('livre')) { cat.value="Lazer & Compras"; tipo.value="Despesa"; }
-      }
-    </script>
-  </body>
-</html>
