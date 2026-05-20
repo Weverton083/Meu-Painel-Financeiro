@@ -37,7 +37,6 @@
       * { box-sizing: border-box; }
       body { font-family: 'Poppins', sans-serif; background-color: var(--cor-fundo); color: var(--cor-texto); margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; transition: 0.3s; min-height: 100vh;}
       
-      /* MUDANÇA: Agora o container usa 100% da largura da tela */
       .container { width: 100%; max-width: 100%; padding: 0 10px; }
       
       /* --- TELA DE LOGIN PREMIUM --- */
@@ -182,7 +181,7 @@
       input, select { width: 100%; padding: 14px 14px 14px 45px; border-radius: 12px; border: 1px solid var(--cor-borda); background-color: var(--cor-fundo); color: var(--cor-texto); box-sizing: border-box; font-size: 1em; font-family: inherit; outline: none; transition: 0.3s; font-weight: 500;}
       select { appearance: none;}
       
-      button.btn-acao { background: var(--cor-primaria); color: white; border: none; font-weight: 600; font-size: 1.1em; padding: 16px; border-radius: 12px; cursor: pointer; width: 100%; transition: 0.3s;}
+      button.btn-acao { background: var(--cor-primaria); color: white; border: none; font-weight: 600; font-size: 1.1em; padding: 16px; border-radius: 12px; cursor: pointer; width: 100%; transition: 0.3s; margin-top: 25px;}
       button.btn-cancelar { background-color: transparent; color: var(--cor-texto-secundario); border: 1px solid var(--cor-borda); font-weight: 600; padding: 14px; border-radius: 12px; cursor: pointer; margin-top: 15px; width: 100%; display: none; font-family: inherit;}
 
       #carregando { display: flex; flex-direction: column; align-items: center; gap: 10px; font-weight: 600; color: var(--cor-primaria); width: 100%; padding: 40px; font-size: 1.2em;}
@@ -196,10 +195,14 @@
       @keyframes slideOut { to { transform: translateX(100%); opacity: 0; } }
 
       /* --- MELHORIAS DO FORMULÁRIO --- */
-      .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 15px; }
+      .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 15px; margin-bottom: 25px; }
       .grid-full { grid-column: span 2; }
-      .input-destaque input { font-size: 1.4em !important; font-weight: 700; color: var(--cor-sucesso) !important; height: 55px; }
-      .input-destaque i { font-size: 1.5em !important; color: var(--cor-sucesso) !important; }
+      
+      /* ESTILOS DINÂMICOS DE COR PARA O CAMPO DE VALOR */
+      .input-destaque input { font-size: 1.4em !important; font-weight: 700; height: 55px; }
+      .input-destaque i { font-size: 1.5em !important; }
+      .valor-receita input, .valor-receita i { color: var(--cor-sucesso) !important; }
+      .valor-despesa input, .valor-despesa i { color: var(--cor-erro) !important; }
 
       /* Ajustes Responsivos do Relógio, Grade e Formulário */
       @media (max-width: 600px) {
@@ -315,7 +318,7 @@
             
             <div class="form-grid">
               <div class="grupo-input grid-full"><label>Tipo de Registro</label><div class="input-icone-wrapper"><i class="ph ph-arrows-down-up"></i>
-                <select id="tipo"><option value="Despesa">Saída (Despesa)</option><option value="Receita">Entrada (Receita)</option></select>
+                <select id="tipo" onchange="atualizarCorValor()"><option value="Despesa">Saída (Despesa)</option><option value="Receita">Entrada (Receita)</option></select>
               </div></div>
               
               <div class="grupo-input"><label>Data Real</label><div class="input-icone-wrapper"><i class="ph ph-calendar-blank"></i><input type="date" id="data" onchange="sugerirMesReferencia(this.value)"></div></div>
@@ -348,7 +351,10 @@
                 </select>
               </div></div>
 
-              <div class="grupo-input grid-full input-destaque"><label>Valor (R$)</label><div class="input-icone-wrapper"><i class="ph ph-currency-circle-dollar"></i><input type="number" id="valor" step="0.01" placeholder="0.00"></div></div>
+              <div class="grupo-input grid-full input-destaque valor-despesa" id="container-valor" style="margin-bottom: 0;">
+                <label>Valor (R$)</label>
+                <div class="input-icone-wrapper"><i class="ph ph-currency-circle-dollar"></i><input type="number" id="valor" step="0.01" placeholder="0.00"></div>
+              </div>
             </div>
 
             <button class="btn-acao" onclick="salvarOuAtualizar()" id="btn-salvar"><i class="ph ph-floppy-disk"></i> Salvar Lançamento</button>
@@ -414,6 +420,19 @@
           showToast("Use o teclado do seu telemóvel para inserir emojis!", "success");
         } else {
           showToast("Pressione [Windows + Ponto] no teclado para abrir os emojis!", "success");
+        }
+      }
+
+      // FUNÇÃO PARA MUDAR A COR DO VALOR
+      window.atualizarCorValor = function() {
+        var tipo = document.getElementById('tipo').value;
+        var container = document.getElementById('container-valor');
+        if(tipo === 'Receita') {
+            container.classList.remove('valor-despesa');
+            container.classList.add('valor-receita');
+        } else {
+            container.classList.remove('valor-receita');
+            container.classList.add('valor-despesa');
         }
       }
 
@@ -612,6 +631,9 @@
         document.getElementById('categoria').value = item.categoria;
         document.getElementById('valor').value = item.valor; 
         document.getElementById('status').value = item.status;
+        
+        window.atualizarCorValor(); // Força a atualização da cor ao editar
+        
         document.getElementById('btn-cancelar').style.display = 'block'; 
         document.getElementById('titulo-form').innerText = "Editando Registro";
         document.getElementById('titulo-form').scrollIntoView({behavior: "smooth", block: "start"});
@@ -621,6 +643,8 @@
         idEmEdicao = null; document.getElementById('btn-cancelar').style.display = 'none';
         document.getElementById('titulo-form').innerText = "Novo Lançamento"; document.getElementById('descricao').value = ''; document.getElementById('valor').value = '';
         var d = new Date(); document.getElementById('mes-referencia').value = d.getMonth() + 1;
+        document.getElementById('tipo').value = 'Despesa';
+        window.atualizarCorValor(); // Volta a cor para vermelho por padrão
       }
 
       function atualizarBarraMeta(idProgresso, idTexto, valorGasto, limite) {
