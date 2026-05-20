@@ -195,12 +195,21 @@
       @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
       @keyframes slideOut { to { transform: translateX(100%); opacity: 0; } }
 
-      /* Ajustes Responsivos do Relógio e Grade */
+      /* --- MELHORIAS DO FORMULÁRIO --- */
+      .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 15px; }
+      .grid-full { grid-column: span 2; }
+      .input-destaque input { font-size: 1.4em !important; font-weight: 700; color: var(--cor-sucesso) !important; height: 55px; }
+      .input-destaque i { font-size: 1.5em !important; color: var(--cor-sucesso) !important; }
+
+      /* Ajustes Responsivos do Relógio, Grade e Formulário */
       @media (max-width: 600px) {
         .cabecalho { flex-direction: column; align-items: stretch; text-align: center; }
         h1 { text-align: center; }
         .relogio-digital { justify-content: center; }
         .header-actions { justify-content: center; }
+        /* TRAVA DE SEGURANÇA PARA O CELULAR NO FORMULÁRIO */
+        .form-grid { grid-template-columns: 1fr; }
+        .grid-full { grid-column: span 1; }
       }
     </style>
   </head>
@@ -303,38 +312,45 @@
         <div class="coluna-form">
           <div class="area-form">
             <h2 id="titulo-form">Novo Lançamento</h2>
-            <div class="grupo-input"><label>Tipo de Registro</label><div class="input-icone-wrapper"><i class="ph ph-arrows-down-up"></i>
-              <select id="tipo"><option value="Despesa">Saída (Despesa)</option><option value="Receita">Entrada (Receita)</option></select>
-            </div></div>
-            <div class="grupo-input"><label>Data do Pagamento/Recebimento (Real)</label><div class="input-icone-wrapper"><i class="ph ph-calendar-blank"></i><input type="date" id="data" onchange="sugerirMesReferencia(this.value)"></div></div>
             
-            <div class="grupo-input"><label>Contar este valor em qual Mês? (Destino)</label><div class="input-icone-wrapper"><i class="ph ph-calendar-star"></i>
-              <select id="mes-referencia">
-                <option value="1">Janeiro</option><option value="2">Fevereiro</option><option value="3">Março</option><option value="4">Abril</option><option value="5">Maio</option><option value="6">Junho</option><option value="7">Julho</option><option value="8">Agosto</option><option value="9">Setembro</option><option value="10">Outubro</option><option value="11">Novembro</option><option value="12">Dezembro</option>
-              </select>
-            </div></div>
+            <div class="form-grid">
+              <div class="grupo-input grid-full"><label>Tipo de Registro</label><div class="input-icone-wrapper"><i class="ph ph-arrows-down-up"></i>
+                <select id="tipo"><option value="Despesa">Saída (Despesa)</option><option value="Receita">Entrada (Receita)</option></select>
+              </div></div>
+              
+              <div class="grupo-input"><label>Data Real</label><div class="input-icone-wrapper"><i class="ph ph-calendar-blank"></i><input type="date" id="data" onchange="sugerirMesReferencia(this.value)"></div></div>
+              <div class="grupo-input"><label>Mês Destino</label><div class="input-icone-wrapper"><i class="ph ph-calendar-star"></i>
+                <select id="mes-referencia">
+                  <option value="1">Janeiro</option><option value="2">Fevereiro</option><option value="3">Março</option><option value="4">Abril</option><option value="5">Maio</option><option value="6">Junho</option><option value="7">Julho</option><option value="8">Agosto</option><option value="9">Setembro</option><option value="10">Outubro</option><option value="11">Novembro</option><option value="12">Dezembro</option>
+                </select>
+              </div></div>
 
-            <div class="grupo-input"><label>Descrição</label><div class="input-icone-wrapper"><i class="ph ph-text-t"></i>
-              <input type="text" id="descricao" onkeyup="corrigirTextoInteligente()" placeholder="O que você pagou?">
-              <button type="button" class="btn-emoji" onclick="abrirTecladoEmoji()" title="Adicionar Emoji">😀</button>
-            </div></div>
-            
-            <div class="grupo-input"><label>Categoria</label><div class="input-icone-wrapper"><i class="ph ph-tag"></i>
-              <select id="categoria">
-                <option value="Moradia">Moradia (Aluguel, Luz, Internet)</option>
-                <option value="Cartão de Crédito">Cartão de Crédito</option>
-                <option value="Transporte">Transporte (Moto, Carro, Uber, Ônibus)</option>
-                <option value="Alimentação">Alimentação (Mercado, iFood, Cozinhar)</option>
-                <option value="Lazer">Lazer & Estilo de Vida (Shopping, Saídas)</option>
-                <option value="Outros">Outros / Emergências</option>
-                <option value="Salário">Salário / Renda / Vale</option>
-              </select>
-            </div></div>
-            
-            <div class="grupo-input"><label>Status</label><div class="input-icone-wrapper"><i class="ph ph-check-circle"></i>
-              <select id="status"><option value="Pago">Já Pago / Recebido</option><option value="Pendente">Pendente (Aguardando)</option></select>
-            </div></div>
-            <div class="grupo-input"><label>Valor (R$)</label><div class="input-icone-wrapper"><i class="ph ph-currency-circle-dollar"></i><input type="number" id="valor" step="0.01" placeholder="0.00"></div></div>
+              <div class="grupo-input grid-full"><label>Descrição</label><div class="input-icone-wrapper"><i class="ph ph-text-t"></i>
+                <input type="text" id="descricao" onkeyup="corrigirTextoInteligente()" placeholder="O que você pagou?">
+                <button type="button" class="btn-emoji" onclick="abrirTecladoEmoji()" title="Adicionar Emoji">😀</button>
+              </div></div>
+              
+              <div class="grupo-input"><label>Categoria</label><div class="input-icone-wrapper"><i class="ph ph-tag"></i>
+                <select id="categoria">
+                  <option value="Moradia">Moradia / Contas</option>
+                  <option value="Cartão de Crédito">Cartão de Crédito</option>
+                  <option value="Transporte">Transporte / Moto</option>
+                  <option value="Alimentação">Alimentação</option>
+                  <option value="Lazer">Lazer / Compras</option>
+                  <option value="Outros">Outros</option>
+                  <option value="Salário">Salário / Renda</option>
+                </select>
+              </div></div>
+              <div class="grupo-input"><label>Status</label><div class="input-icone-wrapper"><i class="ph ph-check-circle"></i>
+                <select id="status">
+                  <option value="Pago">Concluído (Efetivado)</option>
+                  <option value="Pendente">Pendente (Aguardando)</option>
+                </select>
+              </div></div>
+
+              <div class="grupo-input grid-full input-destaque"><label>Valor (R$)</label><div class="input-icone-wrapper"><i class="ph ph-currency-circle-dollar"></i><input type="number" id="valor" step="0.01" placeholder="0.00"></div></div>
+            </div>
+
             <button class="btn-acao" onclick="salvarOuAtualizar()" id="btn-salvar"><i class="ph ph-floppy-disk"></i> Salvar Lançamento</button>
             <button class="btn-cancelar" onclick="cancelarEdicao()" id="btn-cancelar">Cancelar Edição</button>
           </div>
