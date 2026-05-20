@@ -5,6 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Meu Painel Financeiro</title>
     
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+
     <link rel="icon" type="image/png" href="icone.png?v=50">
     <link rel="apple-touch-icon" href="icone.png?v=50">
 
@@ -365,7 +369,6 @@
       let filtroRapidoAtivo = 'Todas';
       const formatoMoeda = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
       
-      // Ajustado objeto de metas para bater com as chaves universais
       let minhasMetas = { Moradia: 500, Cartao: 1000, Transporte: 300, Alimentação: 500, Lazer: 300, Outros: 300 };
 
       function setupInicial() {
@@ -376,7 +379,6 @@
         document.getElementById('data').value = d.toISOString().split('T')[0];
         document.getElementById('mes-referencia').value = d.getMonth() + 1;
         
-        // Ativa o relógio em tempo real
         setInterval(atualizarRelogio, 1000);
         atualizarRelogio();
       }
@@ -389,7 +391,6 @@
         document.getElementById('relogio-texto').innerText = `${horas}:${minutos}:${segundos}`;
       }
       
-      // MELHORIA: Abre o seletor nativo de Emojis do Windows/Mac/Telemóvel
       window.abrirTecladoEmoji = function() {
         const inputDesc = document.getElementById('descricao');
         inputDesc.focus();
@@ -509,7 +510,6 @@
           todosDados.forEach(item => {
             if(!item.data) return;
             
-            // Compatibilidade retroativa caso chaves antigas ainda existam no banco
             if (item.categoria === "Contas") item.categoria = "Moradia";
             if (item.categoria === "Moto") item.categoria = "Transporte";
             if (item.categoria === "Pessoal") item.categoria = "Alimentação";
