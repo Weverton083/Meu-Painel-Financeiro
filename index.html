@@ -110,16 +110,28 @@
       .btn-tema:hover, .btn-logout:hover { transform: scale(1.05); color: var(--cor-primaria);}
       .btn-logout { color: var(--cor-erro); }
 
-      /* --- APP UI --- */
-      .area-filtro { display: flex; justify-content: center; gap: 15px; margin-bottom: 40px; }
-      .area-filtro select { width: auto; padding: 10px 20px; border-radius: 12px; font-weight: 600; background-color: var(--cor-cartao); color: var(--cor-texto); cursor: pointer; border: 1px solid var(--cor-borda); outline: none; font-size: 1em; box-shadow: var(--sombra); transition: 0.3s; font-family: inherit;}
+      /* --- MELHORIA: CONTROLE DE TEMPO (FILTRO) --- */
+      .area-filtro { display: flex; justify-content: center; margin-bottom: 40px; }
+      .controle-tempo { 
+        display: flex; align-items: center; gap: 10px; background-color: var(--cor-cartao); 
+        padding: 8px 20px; border-radius: 20px; box-shadow: var(--sombra); border: 1px solid var(--cor-borda);
+        transition: 0.3s;
+      }
+      .controle-tempo i { font-size: 1.5em; color: var(--cor-primaria); }
+      .controle-tempo select { 
+        border: none; background: transparent; padding: 5px 10px; font-weight: 600; 
+        color: var(--cor-texto); cursor: pointer; outline: none; font-size: 1.05em; font-family: inherit;
+      }
       
       .conteudo-principal { display: flex; flex-wrap: wrap; gap: 30px; align-items: flex-start; width: 100%; }
       .coluna-painel { flex: 3 1 700px; display: flex; flex-direction: column; gap: 30px;}
       .coluna-form { flex: 1 1 380px; position: sticky; top: 20px; }
       
       .painel-resumo { display: flex; flex-wrap: wrap; gap: 20px; }
-      .cartao-saldo { background: linear-gradient(135deg, var(--cor-primaria), #818cf8); color: white; width: 100%; padding: 40px 30px; border-radius: 24px; text-align: center; box-shadow: 0 20px 25px -5px rgba(79, 70, 229, 0.3); position: relative; overflow: hidden;}
+      
+      /* MELHORIA: FUNDO DO SALDO DINÂMICO */
+      .cartao-saldo { background: linear-gradient(135deg, var(--cor-primaria), #818cf8); color: white; width: 100%; padding: 40px 30px; border-radius: 24px; text-align: center; box-shadow: 0 20px 25px -5px rgba(79, 70, 229, 0.3); position: relative; overflow: hidden; transition: background 0.5s ease;}
+      .cartao-saldo.saldo-negativo { background: linear-gradient(135deg, var(--cor-erro), #9f1239); box-shadow: 0 20px 25px -5px rgba(239, 68, 68, 0.3); }
       .cartao-saldo p { margin: 0; opacity: 0.9; font-size: 1.1em; font-weight: 500; text-transform: uppercase; letter-spacing: 1px;}
       .cartao-saldo h2 { margin: 10px 0 0 0; font-size: 3.5em; font-weight: 700; letter-spacing: -1px;}
       
@@ -132,7 +144,7 @@
 
       .cartao-categoria { background-color: var(--cor-cartao); flex: 1 1 calc(33.333% - 15px); min-width: 240px; padding: 25px; border-radius: 20px; box-shadow: var(--sombra); text-align: left; border: 1px solid var(--cor-borda); transition: 0.3s; position: relative;}
       .cartao-categoria h3 { margin: 0 0 15px 0; font-size: 1em; color: var(--cor-texto-secundario); font-weight: 600; display: flex; align-items: center; gap: 8px;}
-      .cartao-categoria p { margin: 0; font-size: 1.6em; font-weight: 700; color: var(--cor-texto);}
+      .cartao-categoria p { margin: 0; font-size: 1.6em; font-weight: 700; color: var(--cor-texto); transition: color 0.3s;}
       
       .area-meta { cursor: pointer; margin-top: 15px; border-radius: 8px; transition: 0.2s; padding: 5px;}
       .area-meta:hover { background-color: var(--cor-input-bg); }
@@ -168,7 +180,6 @@
       .grupo-input { margin-bottom: 20px; }
       .grupo-input label { font-weight: 600; display: block; font-size: 0.9em; color: var(--cor-texto-secundario); margin-bottom: 8px;}
       
-      /* ENTRADA DE TEXTO COM BOTÃO DE EMOJI INTEGRADO */
       .input-icone-wrapper { position: relative; display: flex; align-items: center; width: 100%; }
       .input-icone-wrapper i:first-child { position: absolute; left: 15px; color: var(--cor-texto-secundario); font-size: 1.2em; pointer-events: none; }
       
@@ -194,23 +205,19 @@
       @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
       @keyframes slideOut { to { transform: translateX(100%); opacity: 0; } }
 
-      /* --- MELHORIAS DO FORMULÁRIO --- */
       .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 15px; margin-bottom: 25px; }
       .grid-full { grid-column: span 2; }
       
-      /* ESTILOS DINÂMICOS DE COR PARA O CAMPO DE VALOR */
       .input-destaque input { font-size: 1.4em !important; font-weight: 700; height: 55px; }
       .input-destaque i { font-size: 1.5em !important; }
       .valor-receita input, .valor-receita i { color: var(--cor-sucesso) !important; }
       .valor-despesa input, .valor-despesa i { color: var(--cor-erro) !important; }
 
-      /* Ajustes Responsivos do Relógio, Grade e Formulário */
       @media (max-width: 600px) {
         .cabecalho { flex-direction: column; align-items: stretch; text-align: center; }
         h1 { text-align: center; }
         .relogio-digital { justify-content: center; }
         .header-actions { justify-content: center; }
-        /* TRAVA DE SEGURANÇA PARA O CELULAR NO FORMULÁRIO */
         .form-grid { grid-template-columns: 1fr; }
         .grid-full { grid-column: span 1; }
       }
@@ -274,8 +281,15 @@
       </div>
       
       <div class="area-filtro">
-        <select id="filtro-mes" onchange="carregarDadosFirebase()"><option value="1">Janeiro</option><option value="2">Fevereiro</option><option value="3">Março</option><option value="4">Abril</option><option value="5">Maio</option><option value="6">Junho</option><option value="7">Julho</option><option value="8">Agosto</option><option value="9">Setembro</option><option value="10">Outubro</option><option value="11">Novembro</option><option value="12">Dezembro</option></select>
-        <select id="filtro-ano" onchange="carregarDadosFirebase()"><option value="2026">2026</option><option value="2027">2027</option><option value="2028">2028</option><option value="2029">2029</option><option value="2030">2030</option></select>
+        <div class="controle-tempo">
+          <i class="ph ph-calendar-check"></i>
+          <select id="filtro-mes" onchange="carregarDadosFirebase()">
+            <option value="1">Janeiro</option><option value="2">Fevereiro</option><option value="3">Março</option><option value="4">Abril</option><option value="5">Maio</option><option value="6">Junho</option><option value="7">Julho</option><option value="8">Agosto</option><option value="9">Setembro</option><option value="10">Outubro</option><option value="11">Novembro</option><option value="12">Dezembro</option>
+          </select>
+          <select id="filtro-ano" onchange="carregarDadosFirebase()">
+            <option value="2026">2026</option><option value="2027">2027</option><option value="2028">2028</option><option value="2029">2029</option><option value="2030">2030</option>
+          </select>
+        </div>
       </div>
 
       <div id="carregando"><div class="spinner"></div><span id="texto-carregando">Lendo banco de dados...</span></div>
@@ -283,16 +297,19 @@
       <div class="conteudo-principal" id="conteudo" style="display: none;">
         <div class="coluna-painel">
           <div class="painel-resumo">
-            <div class="cartao-saldo"><p>Saldo do Mês</p><h2 id="tela-saldo">R$ 0,00</h2></div>
+            <div class="cartao-saldo" id="cartao-saldo-bg">
+              <p>Saldo do Mês</p>
+              <h2 id="tela-saldo">R$ 0,00</h2>
+            </div>
             <div class="cartao-sub">
               <div class="cartao-receita"><h3><i class="ph ph-trend-up"></i> Entradas</h3><p id="tela-receitas">R$ 0,00</p></div>
               <div class="cartao-gasto"><h3><i class="ph ph-trend-down"></i> Saídas</h3><p id="tela-gastos">R$ 0,00</p></div>
             </div>
             
-            <div class="cartao-categoria"><h3><i class="ph ph-house"></i> Moradia</h3><p id="tela-contas">R$ 0,00</p><div class="area-meta" onclick="mudarMeta('Contas')"><div class="barra-fundo"><div class="barra-progresso" id="prog-contas"></div></div><div class="meta-texto"><span id="meta-contas">Meta: R$ 0,00</span><i class="ph ph-pencil-simple"></i></div></div></div>
+            <div class="cartao-categoria"><h3><i class="ph ph-house"></i> Moradia</h3><p id="tela-contas">R$ 0,00</p><div class="area-meta" onclick="mudarMeta('Moradia')"><div class="barra-fundo"><div class="barra-progresso" id="prog-contas"></div></div><div class="meta-texto"><span id="meta-contas">Meta: R$ 0,00</span><i class="ph ph-pencil-simple"></i></div></div></div>
             <div class="cartao-categoria"><h3><i class="ph ph-credit-card"></i> Cartão</h3><p id="tela-cartao">R$ 0,00</p><div class="area-meta" onclick="mudarMeta('Cartao')"><div class="barra-fundo"><div class="barra-progresso" id="prog-cartao"></div></div><div class="meta-texto"><span id="meta-cartao">Meta: R$ 0,00</span><i class="ph ph-pencil-simple"></i></div></div></div>
-            <div class="cartao-categoria"><h3><i class="ph ph-jeep"></i> Transporte</h3><p id="tela-moto">R$ 0,00</p><div class="area-meta" onclick="mudarMeta('Moto')"><div class="barra-fundo"><div class="barra-progresso" id="prog-moto"></div></div><div class="meta-texto"><span id="meta-moto">Meta: R$ 0,00</span><i class="ph ph-pencil-simple"></i></div></div></div>
-            <div class="cartao-categoria"><h3><i class="ph ph-fork-knife"></i> Alimentação</h3><p id="tela-pessoal">R$ 0,00</p><div class="area-meta" onclick="mudarMeta('Pessoal')"><div class="barra-fundo"><div class="barra-progresso" id="prog-pessoal"></div></div><div class="meta-texto"><span id="meta-pessoal">Meta: R$ 0,00</span><i class="ph ph-pencil-simple"></i></div></div></div>
+            <div class="cartao-categoria"><h3><i class="ph ph-jeep"></i> Transporte</h3><p id="tela-moto">R$ 0,00</p><div class="area-meta" onclick="mudarMeta('Transporte')"><div class="barra-fundo"><div class="barra-progresso" id="prog-moto"></div></div><div class="meta-texto"><span id="meta-moto">Meta: R$ 0,00</span><i class="ph ph-pencil-simple"></i></div></div></div>
+            <div class="cartao-categoria"><h3><i class="ph ph-fork-knife"></i> Alimentação</h3><p id="tela-pessoal">R$ 0,00</p><div class="area-meta" onclick="mudarMeta('Alimentação')"><div class="barra-fundo"><div class="barra-progresso" id="prog-pessoal"></div></div><div class="meta-texto"><span id="meta-pessoal">Meta: R$ 0,00</span><i class="ph ph-pencil-simple"></i></div></div></div>
             <div class="cartao-categoria"><h3><i class="ph ph-popcorn"></i> Lazer</h3><p id="tela-lazer">R$ 0,00</p><div class="area-meta" onclick="mudarMeta('Lazer')"><div class="barra-fundo"><div class="barra-progresso" id="prog-lazer"></div></div><div class="meta-texto"><span id="meta-lazer">Meta: R$ 0,00</span><i class="ph ph-pencil-simple"></i></div></div></div>
             <div class="cartao-categoria" style="flex-grow: 1;"><h3><i class="ph ph-package"></i> Outros</h3><p id="tela-outros">R$ 0,00</p><div class="area-meta" onclick="mudarMeta('Outros')"><div class="barra-fundo"><div class="barra-progresso" id="prog-outros"></div></div><div class="meta-texto"><span id="meta-outros">Meta: R$ 0,00</span><i class="ph ph-pencil-simple"></i></div></div></div>
           </div>
@@ -423,7 +440,6 @@
         }
       }
 
-      // FUNÇÃO PARA MUDAR A COR DO VALOR
       window.atualizarCorValor = function() {
         var tipo = document.getElementById('tipo').value;
         var container = document.getElementById('container-valor');
@@ -632,7 +648,7 @@
         document.getElementById('valor').value = item.valor; 
         document.getElementById('status').value = item.status;
         
-        window.atualizarCorValor(); // Força a atualização da cor ao editar
+        window.atualizarCorValor(); 
         
         document.getElementById('btn-cancelar').style.display = 'block'; 
         document.getElementById('titulo-form').innerText = "Editando Registro";
@@ -644,14 +660,26 @@
         document.getElementById('titulo-form').innerText = "Novo Lançamento"; document.getElementById('descricao').value = ''; document.getElementById('valor').value = '';
         var d = new Date(); document.getElementById('mes-referencia').value = d.getMonth() + 1;
         document.getElementById('tipo').value = 'Despesa';
-        window.atualizarCorValor(); // Volta a cor para vermelho por padrão
+        window.atualizarCorValor(); 
       }
 
-      function atualizarBarraMeta(idProgresso, idTexto, valorGasto, limite) {
+      function atualizarBarraMeta(idProgresso, idTexto, valorGasto, limite, idValorPrincipal) {
         if (!limite) limite = 0.01;
-        var barra = document.getElementById(idProgresso); document.getElementById(idTexto).innerText = `R$ ${limite.toFixed(2)}`;
+        var barra = document.getElementById(idProgresso); 
+        document.getElementById(idTexto).innerText = `R$ ${limite.toFixed(2)}`;
         var perc = (valorGasto / limite) * 100;
-        barra.style.width = (perc > 100 ? 100 : perc) + '%'; barra.style.backgroundColor = valorGasto > limite ? 'var(--cor-erro)' : 'var(--cor-sucesso)';
+        
+        var estourou = valorGasto > limite;
+        
+        barra.style.width = (perc > 100 ? 100 : perc) + '%'; 
+        barra.style.backgroundColor = estourou ? 'var(--cor-erro)' : 'var(--cor-sucesso)';
+        
+        if (idValorPrincipal) {
+          var textoPrincipal = document.getElementById(idValorPrincipal);
+          if (textoPrincipal) {
+             textoPrincipal.style.color = estourou ? 'var(--cor-erro)' : 'var(--cor-texto)';
+          }
+        }
       }
 
       function desenharGrafico(resumo) {
@@ -672,9 +700,14 @@
       function atualizarTela(resumo) {
         try {
           resumoGlobal = resumo; historicoGlobal = resumo.historico;
+          
           document.getElementById('tela-saldo').innerText = formatoMoeda.format(resumo.saldo);
           document.getElementById('tela-receitas').innerText = formatoMoeda.format(resumo.totalReceitas);
           document.getElementById('tela-gastos').innerText = formatoMoeda.format(resumo.totalGastos);
+          
+          var cartaoSaldo = document.getElementById('cartao-saldo-bg');
+          if (resumo.saldo < 0) cartaoSaldo.classList.add('saldo-negativo');
+          else cartaoSaldo.classList.remove('saldo-negativo');
           
           document.getElementById('tela-contas').innerText = formatoMoeda.format(resumo.categorias['Moradia'] || 0);
           document.getElementById('tela-cartao').innerText = formatoMoeda.format(resumo.categorias['Cartão de Crédito'] || 0);
@@ -683,12 +716,12 @@
           document.getElementById('tela-lazer').innerText = formatoMoeda.format(resumo.categorias['Lazer'] || 0);
           document.getElementById('tela-outros').innerText = formatoMoeda.format(resumo.categorias['Outros'] || 0);
           
-          atualizarBarraMeta('prog-contas', 'meta-contas', resumo.categorias['Moradia'] || 0, minhasMetas.Moradia || 500);
-          atualizarBarraMeta('prog-cartao', 'meta-cartao', resumo.categorias['Cartão de Crédito'] || 0, minhasMetas.Cartao || 1000);
-          atualizarBarraMeta('prog-moto', 'meta-moto', resumo.categorias['Transporte'] || 0, minhasMetas.Transporte || 300);
-          atualizarBarraMeta('prog-pessoal', 'meta-pessoal', resumo.categorias['Alimentação'] || 0, minhasMetas.Alimentação || 500);
-          atualizarBarraMeta('prog-lazer', 'meta-lazer', resumo.categorias['Lazer'] || 0, minhasMetas.Lazer || 300);
-          atualizarBarraMeta('prog-outros', 'meta-outros', resumo.categorias['Outros'] || 0, minhasMetas.Outros || 300);
+          atualizarBarraMeta('prog-contas', 'meta-contas', resumo.categorias['Moradia'] || 0, minhasMetas.Moradia || 500, 'tela-contas');
+          atualizarBarraMeta('prog-cartao', 'meta-cartao', resumo.categorias['Cartão de Crédito'] || 0, minhasMetas.Cartao || 1000, 'tela-cartao');
+          atualizarBarraMeta('prog-moto', 'meta-moto', resumo.categorias['Transporte'] || 0, minhasMetas.Transporte || 300, 'tela-moto');
+          atualizarBarraMeta('prog-pessoal', 'meta-pessoal', resumo.categorias['Alimentação'] || 0, minhasMetas.Alimentação || 500, 'tela-pessoal');
+          atualizarBarraMeta('prog-lazer', 'meta-lazer', resumo.categorias['Lazer'] || 0, minhasMetas.Lazer || 300, 'tela-lazer');
+          atualizarBarraMeta('prog-outros', 'meta-outros', resumo.categorias['Outros'] || 0, minhasMetas.Outros || 300, 'tela-outros');
           
           if(typeof google !== 'undefined' && google.charts) { google.charts.setOnLoadCallback(function() { desenharGrafico(resumo); }); }
           window.filtrarLista(); 
