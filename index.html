@@ -73,6 +73,7 @@
 
       @media (max-width: 868px) { .auth-sidebar { display: none; } }
       
+      /* --- HEADER & RELÓGIO --- */
       .cabecalho { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; gap: 15px; }
       h1 { color: var(--cor-texto); margin: 0; font-size: 1.8em; font-weight: 700; text-align: left; flex-grow: 1; letter-spacing: -0.5px;}
       h1 span { color: var(--cor-primaria); }
@@ -176,22 +177,11 @@
       .valor-receita input, .valor-receita i { color: var(--cor-sucesso) !important; }
       .valor-despesa input, .valor-despesa i { color: var(--cor-erro) !important; }
 
-      /* --- AJUSTES RESPONSIVOS (CELULAR COM CARA DE APP NATIVO) --- */
       @media (max-width: 600px) {
-        .cabecalho { flex-wrap: wrap; flex-direction: row; align-items: center; gap: 10px; }
-        h1 { font-size: 1.4em; text-align: left; }
-        .header-actions { order: 3; }
-        .relogio-digital { order: 4; width: 100%; justify-content: center; margin-top: 5px; }
-        .controle-tempo { width: 100%; justify-content: center; }
-        .painel-resumo { gap: 10px; }
-        .cartao-sub { gap: 10px; }
-        .cartao-receita, .cartao-gasto { padding: 15px; }
-        .cartao-receita p, .cartao-gasto p { font-size: 1.6em; }
-        
-        .cartao-categoria { flex: 1 1 calc(50% - 10px) !important; min-width: 140px !important; padding: 15px; }
-        .cartao-categoria h3 { font-size: 0.85em; }
-        .cartao-categoria p { font-size: 1.3em; margin-top: 5px; }
-        
+        .cabecalho { flex-direction: column; align-items: stretch; text-align: center; }
+        h1 { text-align: center; }
+        .relogio-digital { justify-content: center; }
+        .header-actions { justify-content: center; }
         .form-grid { grid-template-columns: 1fr; }
         .grid-full { grid-column: span 1; }
       }
@@ -537,6 +527,7 @@
           todosDados.forEach(item => {
             if(!item.data) return;
             
+            // COMPATIBILIDADE COM SEUS DADOS ANTIGOS E NOVAS CATEGORIAS
             if (item.categoria === "Contas" || item.categoria === "Moradia") item.categoria = "Contas Fixas";
             if (item.categoria === "Moto") item.categoria = "Transporte";
             if (item.categoria === "Pessoal") item.categoria = "Alimentação";
