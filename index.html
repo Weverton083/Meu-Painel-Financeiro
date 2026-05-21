@@ -177,7 +177,15 @@
       .input-destaque i { font-size: 1.5em !important; }
       .valor-receita input, .valor-receita i { color: var(--cor-sucesso) !important; }
       .valor-despesa input, .valor-despesa i { color: var(--cor-erro) !important; }
-
+      /* --- TUTORIAL DE BOAS VINDAS --- */
+      .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(5px); z-index: 10000; display: none; justify-content: center; align-items: center; padding: 20px; }
+      .modal-tutorial { background: var(--cor-cartao); padding: 40px; border-radius: 24px; max-width: 450px; width: 100%; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); text-align: center; border: 1px solid var(--cor-borda); animation: slideIn 0.4s ease-out; }
+      .modal-tutorial h2 { margin-top: 0; color: var(--cor-texto); font-size: 1.6em; margin-bottom: 25px; font-weight: 700;}
+      .tutorial-step { display: flex; align-items: center; gap: 18px; text-align: left; margin-bottom: 20px; padding: 18px; background: var(--cor-input-bg); border-radius: 16px; border: 1px solid var(--cor-borda);}
+      .tutorial-step i { font-size: 2.2em; color: var(--cor-primaria); }
+      .tutorial-step strong { color: var(--cor-texto); font-size: 1.05em; display: block; margin-bottom: 3px;}
+      .tutorial-step span { color: var(--cor-texto-secundario); font-size: 0.9em; line-height: 1.4;}
+     
       @media (max-width: 600px) {
         .cabecalho { flex-direction: column; align-items: stretch; text-align: center; }
         h1 { text-align: center; }
@@ -189,7 +197,29 @@
     </style>
   </head>
   <body>
-
+  <div id="tutorial-overlay" class="modal-overlay">
+      <div class="modal-tutorial">
+        <h2>🚀 Como usar o Painel</h2>
+        
+        <div class="tutorial-step">
+          <i class="ph ph-plus-circle"></i>
+          <div><strong>1. Registre Tudo</strong><span>Adicione suas entradas e saídas no formulário para ver a mágica acontecer.</span></div>
+        </div>
+        
+        <div class="tutorial-step">
+          <i class="ph ph-target"></i>
+          <div><strong>2. Defina suas Metas</strong><span>Clique em qualquer categoria (Ex: Transporte) para definir um limite de gastos.</span></div>
+        </div>
+        
+        <div class="tutorial-step">
+          <i class="ph ph-chart-pie-slice"></i>
+          <div><strong>3. Analise e Filtre</strong><span>Use a busca e os botões rápidos para encontrar gastos antigos facilmente.</span></div>
+        </div>
+        
+        <button class="btn-acao" onclick="fecharTutorial()" style="margin-top: 10px;">Entendi, vamos lá!</button>
+      </div>
+    </div>
+   
     <div id="toast-container"></div>
 
     <div id="auth-screen">
@@ -240,10 +270,10 @@
         </div>
 
         <div class="header-actions">
+          <button class="btn-tema" onclick="abrirTutorial()" title="Como usar"><i class="ph ph-question"></i></button>
           <button class="btn-tema" onclick="alternarTema()" id="btn-icone-tema"><i class="ph ph-moon"></i></button>
           <button class="btn-logout" onclick="fazerLogout()" title="Sair da Conta"><i class="ph ph-sign-out"></i></button>
         </div>
-      </div>
       
       <div class="area-filtro">
         <div class="controle-tempo">
@@ -584,6 +614,11 @@
           else { await addDoc(collection(db, "lancamentos"), dados); showToast('Salvo com sucesso!'); }
           window.cancelarEdicao(); 
           window.carregarDadosFirebase();
+          // Verifica se é a primeira vez do usuário e abre o tutorial
+          if(!localStorage.getItem('tutorialVisto')) {
+            setTimeout(abrirTutorial, 1000);
+          }
+        
         } catch(error) { showToast("Erro: " + error.message, "error"); }
         btn.innerHTML = '<i class="ph ph-floppy-disk"></i> Salvar Lançamento'; btn.disabled = false;
       }
@@ -730,6 +765,16 @@
         else if (t.includes('cbr')||t.includes('moto')||t.includes('uber')||t.includes('carro')||t.includes('posto')) { cat.value="Transporte"; tipo.value="Despesa"; } 
         else if (t.includes('cinema')||t.includes('shopping')||t.includes('festa')||t.includes('compras')||t.includes('livre')) { cat.value="Lazer & Compras"; tipo.value="Despesa"; }
       }
+    // --- SISTEMA DE TUTORIAL ---
+      window.abrirTutorial = function() {
+        document.getElementById('tutorial-overlay').style.display = 'flex';
+      }
+      
+      window.fecharTutorial = function() {
+        document.getElementById('tutorial-overlay').style.display = 'none';
+        localStorage.setItem('tutorialVisto', 'true');
+      }
+    
     </script>
   </body>
 </html>
